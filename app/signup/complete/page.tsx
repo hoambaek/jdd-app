@@ -12,11 +12,41 @@ export default function SignupComplete() {
       return Math.random() * (max - min) + min;
     }
 
-    confetti({
-      angle: randomInRange(55, 125),
-      spread: randomInRange(50, 70),
-      particleCount: randomInRange(50, 100),
-      origin: { x: 0.5, y: 0.5 }
+    const defaults = {
+      origin: { y: 0.7 }
+    };
+
+    function fire(particleRatio: number, opts: object) {
+      confetti({
+        ...defaults,
+        ...opts,
+        particleCount: Math.floor(200 * particleRatio),
+      });
+    }
+
+    fire(0.25, {
+      spread: 26,
+      startVelocity: 55,
+    });
+
+    fire(0.2, {
+      spread: 60,
+    });
+
+    fire(0.35, {
+      spread: 100,
+      decay: 0.91,
+    });
+
+    fire(0.1, {
+      spread: 120,
+      startVelocity: 25,
+      decay: 0.92,
+    });
+
+    fire(0.1, {
+      spread: 120,
+      startVelocity: 45,
     });
   };
 
