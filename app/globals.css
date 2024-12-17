@@ -78,3 +78,71 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 2s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.firework-piece {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #ffd700;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+  border-radius: 50%;
+  transform-origin: center;
+}
+
+.firework-piece:nth-child(1) {
+  animation: explode 1500ms infinite ease-out;
+  animation-delay: 100ms;
+  background: #7b68ee;
+}
+
+.firework-piece:nth-child(2) {
+  animation: explode 1500ms infinite ease-out;
+  animation-delay: 200ms;
+  background: #ff1493;
+}
+
+.firework-piece:nth-child(3) {
+  animation: explode 1500ms infinite ease-out;
+  animation-delay: 300ms;
+  background: #ff6b6b;
+}
+
+.firework-piece:nth-child(4) {
+  animation: explode 1500ms infinite ease-out;
+  animation-delay: 400ms;
+  background: #87ceeb;
+}
+
+.firework-piece:nth-child(5) {
+  animation: explode 1500ms infinite ease-out;
+  animation-delay: 500ms;
+  background: #98fb98;
+}
+
+@keyframes explode {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(calc(var(--x) * 1.5), calc(var(--y) * 1.5)) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--x) * 3), calc(var(--y) * 3)) scale(0.8);
+  }
+}

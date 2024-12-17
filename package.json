@@ -9,12 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.47.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "next": "14.2.16",
     "react": "^18",
+    "react-confetti": "^6.1.0",
     "react-dom": "^18",
+    "react-use": "^17.6.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7"
   },
