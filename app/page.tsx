@@ -17,6 +17,7 @@ export default function Home() {
         autoPlay
         loop
         muted
+        playsInline
       />
       <div className="absolute top-0 left-0 w-full h-full bg-black" style={{ opacity: 0.3 }}></div>
       <div className="relative z-10 text-center text-white">
@@ -31,7 +32,10 @@ export default function Home() {
         장덕독성당 중고등부 앱
         </h1>
         <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
-          <button className="bg-green-500 text-white py-2 px-4 rounded-full transition duration-300 ease-in-out hover:bg-green-600 fade-in">
+          <button
+            onClick={() => router.push("/login")}
+            className="bg-green-500 text-white py-2 px-4 rounded-full transition duration-300 ease-in-out hover:bg-green-600 fade-in"
+          >
             로그인
           </button>
           <button
