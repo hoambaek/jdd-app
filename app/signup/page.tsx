@@ -19,7 +19,7 @@ export default function Signup() {
 
   const nameRef = useRef<HTMLInputElement>(null);
   const baptismalNameRef = useRef<HTMLInputElement>(null);
-  const gradeRef = useRef<HTMLSelectElement>(null);
+  const gradeRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -45,7 +45,7 @@ export default function Signup() {
     }
   }, [step]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -90,8 +90,19 @@ export default function Signup() {
         console.error("Error inserting into profiles:", insertError);
         alert("프로필 저장 중 오류가 발생했습니다: " + (insertError.message || "알 수 없는 오류"));
       } else {
-        alert("가입이 성공적으로 완료되었습니다!");
-        router.push('/signup/complete');
+        // 로그인 상태 유지
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (signInError) {
+          console.error("Error signing in:", signInError.message);
+          alert("로그인 중 오류가 발생했습니다: " + signInError.message);
+        } else {
+          alert("가입이 성공적으로 완료되었습니다!");
+          router.push('/signup/complete');
+        }
       }
     }
   };
