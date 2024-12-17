@@ -16,7 +16,7 @@ export default function SignupComplete() {
       origin: { y: 0.7 }
     };
 
-    function fire(particleRatio: number, opts: { spread?: number; startVelocity?: number; decay?: number }) {
+    function fire(particleRatio: number, opts: { spread?: number; startVelocity?: number; decay?: number; origin?: { y: number } }) {
       confetti({
         ...defaults,
         ...opts,
@@ -62,7 +62,7 @@ export default function SignupComplete() {
       origin: { y: 0.7 }
     };
 
-    function fire(particleRatio, opts) {
+    function fire(particleRatio: number, opts: { spread?: number; startVelocity?: number; decay?: number; scalar?: number }) {
       confetti({
         ...defaults,
         ...opts,
