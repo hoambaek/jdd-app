@@ -8,7 +8,7 @@ export default function SignupComplete() {
   const router = useRouter();
 
   const handleConfetti = () => {
-    function randomInRange(min, max) {
+    function randomInRange(min: number, max: number): number {
       return Math.random() * (max - min) + min;
     }
 
