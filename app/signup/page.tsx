@@ -19,7 +19,7 @@ export default function Signup() {
 
   const nameRef = useRef<HTMLInputElement>(null);
   const baptismalNameRef = useRef<HTMLInputElement>(null);
-  const gradeRef = useRef<HTMLInputElement>(null);
+  const gradeRef = useRef<HTMLSelectElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -45,7 +45,7 @@ export default function Signup() {
     }
   }, [step]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
