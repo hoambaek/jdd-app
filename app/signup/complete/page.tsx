@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function SignupComplete() {
   const router = useRouter();
@@ -101,10 +102,12 @@ export default function SignupComplete() {
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-green-400 to-blue-500">
       <div className="text-center flex flex-col items-center">
-        <img 
+        <Image 
           src="/con.png" 
           alt="Confetti" 
-          style={{ width: '200px', height: '198px', transition: 'transform 0.2s' }}
+          width={200}
+          height={198}
+          style={{ transition: 'transform 0.2s' }}
           onClick={handleImageClick}
           onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
           onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
