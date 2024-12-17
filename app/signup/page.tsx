@@ -19,7 +19,7 @@ export default function Signup() {
 
   const nameRef = useRef<HTMLInputElement>(null);
   const baptismalNameRef = useRef<HTMLInputElement>(null);
-  const gradeRef = useRef<HTMLInputElement>(null);
+  const gradeRef = useRef<HTMLSelectElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
