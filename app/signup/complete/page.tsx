@@ -9,10 +9,6 @@ export default function SignupComplete() {
   const router = useRouter();
 
   const handleConfetti = () => {
-    function randomInRange(min: number, max: number): number {
-      return Math.random() * (max - min) + min;
-    }
-
     const defaults = {
       origin: { y: 0.7 }
     };
