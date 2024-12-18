@@ -58,13 +58,15 @@ const LoginPage = () => {
         autoPlay
         loop
         muted
+        playsInline
+        webkit-playsinline
         className="absolute w-full h-full object-cover"
       >
         <source src="bg.mp4" type="video/mp4" />
       </video>
       <div
         className={`relative z-10 p-8 rounded-lg w-96 shadow-lg ${shake ? 'shake' : ''}`}
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)', border: '0.3px solid gray' }}
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', border: '0.3px solid gray' }}
       >
         <h1 className="text-3xl font-bold text-white mb-6 text-center">Login</h1>
         <div className="relative mb-4">
