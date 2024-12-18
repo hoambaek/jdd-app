@@ -123,7 +123,7 @@ export default function Signup() {
       >
         <source src="/bg.mp4" type="video/mp4" />
       </video>
-      <div className="max-w-md mx-auto p-6 bg-white/0 backdrop-blur-sm rounded-lg border-[1px] border-white/40">
+      <div className="max-w-md mx-auto p-6 bg-black/8 backdrop-blur-md rounded-lg border-[1px] border-white/0 shadow-lg shadow-black/50">
         <h1 className="text-2xl font-bold text-center mb-6 text-white">회원가입</h1>
         
         <div className="relative mb-4">
