@@ -112,135 +112,146 @@ export default function Signup() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg">
-      <h1 className="text-2xl font-bold text-center mb-6">회원가입</h1>
-      
-      <div className="relative mb-4">
-        <div className="flex justify-between relative z-10">
-          {[1, 2, 3, 4, 5].map((num) => (
-            <div
-              key={num}
-              onClick={() => handleStepClick(num)}
-              className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-colors duration-300 ${
-                num <= step ? "bg-green-500 text-white" : "bg-gray-300"
-              }`}
-            >
-              {num}
-            </div>
-          ))}
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="max-w-md mx-auto p-6 bg-white rounded-lg">
+        <h1 className="text-2xl font-bold text-center mb-6">회원가입</h1>
+        
+        <div className="relative mb-4">
+          <div className="flex justify-between relative z-10">
+            {[1, 2, 3, 4, 5].map((num) => (
+              <div
+                key={num}
+                onClick={() => handleStepClick(num)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-colors duration-300 ${
+                  num <= step ? "bg-green-500 text-white" : "bg-gray-300"
+                }`}
+              >
+                {num}
+              </div>
+            ))}
+          </div>
+          <div className="absolute top-1/2 w-full h-1 bg-gray-300 rounded transform -translate-y-1/2"></div>
+          <div
+            className="absolute top-1/2 h-1 bg-green-500 rounded transform -translate-y-1/2 transition-width duration-300"
+            style={{ width: `${(step - 1) * 25}%` }}
+          ></div>
         </div>
-        <div className="absolute top-1/2 w-full h-1 bg-gray-300 rounded transform -translate-y-1/2"></div>
-        <div
-          className="absolute top-1/2 h-1 bg-green-500 rounded transform -translate-y-1/2 transition-width duration-300"
-          style={{ width: `${(step - 1) * 25}%` }}
-        ></div>
-      </div>
 
-      <div className="p-4">
-        {step === 1 && (
-          <>
-            <p className="text-center mb-2">이름을 입력해주세요.</p>
-            <input
-              ref={nameRef}
-              type="text"
-              name="name"
-              placeholder="이름"
-              value={formData.name}
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              className="w-full p-2 mb-4 border rounded"
-            />
-          </>
-        )}
-        {step === 2 && (
-          <>
-            <p className="text-center mb-2">세례명을 입력해주세요.</p>
-            <input
-              ref={baptismalNameRef}
-              type="text"
-              name="baptismalName"
-              placeholder="세례명"
-              value={formData.baptismalName}
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              className="w-full p-2 mb-4 border rounded"
-            />
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <p className="text-center mb-2">학년을 선택해주세요.</p>
-            <select
-              ref={gradeRef}
-              name="grade"
-              value={formData.grade}
-              onChange={handleChange}
-              className="w-full p-2 mb-4 border rounded"
-            >
-              <option value="">학년 선택</option>
-            <option value="중1">중1</option>
-            <option value="중2">중2</option>
-            <option value="중3">중3</option>
-            <option value="고1">고1</option>
-            <option value="고2">고2</option>
-            <option value="고3">고3</option>
-            </select>
-          </>
-        )}
-        {step === 4 && (
-          <>
-            <p className="text-center mb-2">이메일을 입력해주세요.</p>
-            <input
-              ref={emailRef}
-              type="email"
-              name="email"
-              placeholder="이메일"
-              value={formData.email}
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              className="w-full p-2 mb-4 border rounded"
-            />
-          </>
-        )}
-        {step === 5 && (
-          <>
-            <p className="text-center mb-2">비밀번호를 입력해주세요.</p>
-            <input
-              ref={passwordRef}
-              type="password"
-              name="password"
-              placeholder="비밀번호"
-              value={formData.password}
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              className="w-full p-2 mb-4 border rounded"
-            />
-          </>
-        )}
-
-        <div className="flex justify-between">
-          <button
-            onClick={handlePrevious}
-            disabled={step === 1}
-            className="bg-gray-500 text-white py-2 px-4 rounded-full disabled:opacity-50"
-          >
-            이전
-          </button>
-          {step < 5 ? (
-            <button
-              onClick={handleNext}
-              className="bg-green-500 text-white py-2 px-4 rounded-full"
-            >
-              다음
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              className="bg-blue-500 text-white py-2 px-4 rounded-full"
-            >
-              가입
-            </button>
+        <div className="p-4">
+          {step === 1 && (
+            <>
+              <p className="text-center mb-2">이름을 입력해주세요.</p>
+              <input
+                ref={nameRef}
+                type="text"
+                name="name"
+                placeholder="이름"
+                value={formData.name}
+                onChange={handleChange}
+                onKeyPress={handleKeyPress}
+                className="w-full p-2 mb-4 border rounded"
+              />
+            </>
           )}
+          {step === 2 && (
+            <>
+              <p className="text-center mb-2">세례명을 입력해주세요.</p>
+              <input
+                ref={baptismalNameRef}
+                type="text"
+                name="baptismalName"
+                placeholder="세례명"
+                value={formData.baptismalName}
+                onChange={handleChange}
+                onKeyPress={handleKeyPress}
+                className="w-full p-2 mb-4 border rounded"
+              />
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <p className="text-center mb-2">학년을 선택해주세요.</p>
+              <select
+                ref={gradeRef}
+                name="grade"
+                value={formData.grade}
+                onChange={handleChange}
+                className="w-full p-2 mb-4 border rounded h-11"
+                style={{ padding: '0.5rem', lineHeight: '1.5rem' }}
+              >
+                <option value="">학년 선택</option>
+                <option value="중1">중1</option>
+                <option value="중2">중2</option>
+                <option value="중3">중3</option>
+                <option value="고1">고1</option>
+                <option value="고2">고2</option>
+                <option value="고3">고3</option>
+              </select>
+            </>
+          )}
+          {step === 4 && (
+            <>
+              <p className="text-center mb-2">이메일을 입력해주세요.</p>
+              <input
+                ref={emailRef}
+                type="email"
+                name="email"
+                placeholder="이메일"
+                value={formData.email}
+                onChange={handleChange}
+                onKeyPress={handleKeyPress}
+                className="w-full p-2 mb-4 border rounded"
+              />
+            </>
+          )}
+          {step === 5 && (
+            <>
+              <p className="text-center mb-2">비밀번호를 입력해주세요.</p>
+              <input
+                ref={passwordRef}
+                type="password"
+                name="password"
+                placeholder="비밀번호"
+                value={formData.password}
+                onChange={handleChange}
+                onKeyPress={handleKeyPress}
+                className="w-full p-2 mb-4 border rounded"
+              />
+            </>
+          )}
+
+          <div className="flex justify-between">
+            <button
+              onClick={handlePrevious}
+              disabled={step === 1}
+              className="btn-grad disabled:opacity-50"
+              style={{
+                background: "transparent",
+                border: "2px solid #4CB8C4",
+                borderRadius: "50px",
+                color: "#4CB8C4"
+              }}
+            >
+              이전
+            </button>
+            {step < 5 ? (
+              <button
+                onClick={handleNext}
+                className="btn-grad"
+                style={{ borderRadius: "50px" }}
+              >
+                다음
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                className="btn-grad"
+                style={{ borderRadius: "50px" }}
+              >
+                가입
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

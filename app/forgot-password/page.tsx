@@ -21,7 +21,7 @@ const ForgotPasswordPage = () => {
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <div className="p-8 rounded-lg shadow-lg w-96 bg-white">
+      <div className="p-8 rounded-lg w-96 bg-white" style={{ boxShadow: 'none' }}>
         <h1 className="text-2xl font-bold text-center mb-4">비밀번호를 잊어렸나요?</h1>
         <p className="text-center mb-6">이메일 입력 후 비밀번호를 재설정하세요.</p>
         <input
@@ -33,14 +33,16 @@ const ForgotPasswordPage = () => {
         />
         <button
           onClick={handlePasswordReset}
-          className="bg-blue-500 text-white font-bold py-2 px-4 rounded w-full"
+          className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full w-full"
+          style={{ boxShadow: 'none' }}
         >
           재설정 메일 보내기
         </button>
         {message && <p className="text-center mt-4">{message}</p>}
         <button
           onClick={() => router.push('/login')}
-          className="text-blue-500 mt-4 block text-center"
+          className="text-blue-500 mt-4 block text-center mx-auto rounded-full"
+          style={{ boxShadow: 'none' }}
         >
           다시 로그인하기
         </button>
