@@ -19,7 +19,7 @@ export default function Home() {
         muted
         playsInline
       />
-      <div className="absolute top-0 left-0 w-full h-full bg-black" style={{ opacity: 0.3 }}></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-black" style={{ opacity: 0.17 }}></div>
       <div className="relative z-10 text-center text-white">
         <Image
           className="fade-in"
