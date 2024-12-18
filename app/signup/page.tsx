@@ -112,9 +112,18 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="max-w-md mx-auto p-6 bg-white rounded-lg">
-        <h1 className="text-2xl font-bold text-center mb-6">회원가입</h1>
+    <div className="relative flex justify-center items-center min-h-screen">
+      <video
+        autoPlay
+        loop
+        muted
+        className="absolute w-full h-full object-cover"
+        style={{ zIndex: -1 }}
+      >
+        <source src="/bg.mp4" type="video/mp4" />
+      </video>
+      <div className="max-w-md mx-auto p-6 bg-white/0 backdrop-blur-sm rounded-lg border-[1px] border-white/40">
+        <h1 className="text-2xl font-bold text-center mb-6 text-white">회원가입</h1>
         
         <div className="relative mb-4">
           <div className="flex justify-between relative z-10">
@@ -140,7 +149,7 @@ export default function Signup() {
         <div className="p-4">
           {step === 1 && (
             <>
-              <p className="text-center mb-2">이름을 입력해주세요.</p>
+              <p className="text-center text-white mb-2">이름을 입력해주세요.</p>
               <input
                 ref={nameRef}
                 type="text"
@@ -155,7 +164,7 @@ export default function Signup() {
           )}
           {step === 2 && (
             <>
-              <p className="text-center mb-2">세례명을 입력해주세요.</p>
+              <p className="text-center text-white mb-2">세례명을 입력해주세요.</p>
               <input
                 ref={baptismalNameRef}
                 type="text"
@@ -170,7 +179,7 @@ export default function Signup() {
           )}
           {step === 3 && (
             <>
-              <p className="text-center mb-2">학년을 선택해주세요.</p>
+              <p className="text-center text-white mb-2">학년을 선택해주세요.</p>
               <select
                 ref={gradeRef}
                 name="grade"
@@ -191,7 +200,7 @@ export default function Signup() {
           )}
           {step === 4 && (
             <>
-              <p className="text-center mb-2">이메일을 입력해주세요.</p>
+              <p className="text-center text-white mb-2">이메일을 입력해주세요.</p>
               <input
                 ref={emailRef}
                 type="email"
@@ -206,7 +215,7 @@ export default function Signup() {
           )}
           {step === 5 && (
             <>
-              <p className="text-center mb-2">비밀번호를 입력해주세요.</p>
+              <p className="text-center text-white mb-2">비밀번호를 입력해주세요.</p>
               <input
                 ref={passwordRef}
                 type="password"

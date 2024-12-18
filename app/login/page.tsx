@@ -66,7 +66,12 @@ const LoginPage = () => {
       </video>
       <div
         className={`relative z-10 p-8 rounded-lg w-96 shadow-lg ${shake ? 'shake' : ''}`}
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', border: '0.3px solid gray' }}
+        style={{ 
+          backgroundColor: 'rgba(0, 0, 0, 0.1)', 
+          border: '0.3px  white',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)' // Safari 지원을 위해 추가
+        }}
       >
         <h1 className="text-3xl font-bold text-white mb-6 text-center">Login</h1>
         <div className="relative mb-4">
@@ -78,7 +83,7 @@ const LoginPage = () => {
             onFocus={(e) => e.target.placeholder = ''}
             onBlur={(e) => e.target.placeholder = 'email'}
             className="border border-transparent rounded-full p-3 w-full pr-10 text-left"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', outline: 'none', paddingLeft: '1rem' }}
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', color: '#ffffff', outline: 'none', paddingLeft: '1rem' }}
           />
           <FaEnvelope className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" />
         </div>
@@ -91,7 +96,7 @@ const LoginPage = () => {
             onFocus={(e) => e.target.placeholder = ''}
             onBlur={(e) => e.target.placeholder = 'password'}
             className="border border-transparent rounded-full p-3 w-full pr-10 text-left"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', outline: 'none', paddingLeft: '1rem' }}
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', color: '#ffffff', outline: 'none', paddingLeft: '1rem' }}
           />
           <FaLock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" />
         </div>
