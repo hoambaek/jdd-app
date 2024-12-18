@@ -10,7 +10,6 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
