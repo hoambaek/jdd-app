@@ -21,7 +21,7 @@ const ResetPasswordPage = () => {
     });
 
     if (error) {
-      setMessage(<>비밀번호 재설정에 실패했습니다.<br />다시 입력해 주세요.</>);
+      setMessage("비밀번호 재설정에 실패했습니다. 다시 입력해 주세요.");
     } else {
       setMessage('비밀번호가 성공적으로 재설정되었습니다.');
       setTimeout(() => router.push('/login'), 3000); // 3초 후 로그인 페이지로 이동
