@@ -117,6 +117,7 @@ export default function Signup() {
         autoPlay
         loop
         muted
+        playsInline
         className="absolute w-full h-full object-cover"
         style={{ zIndex: -1 }}
       >
