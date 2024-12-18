@@ -159,6 +159,7 @@ export default function Signup() {
                 value={formData.name}
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
+                autoComplete="off"
                 className="w-full p-2 mb-4 border rounded"
               />
             </>
@@ -210,6 +211,7 @@ export default function Signup() {
                 value={formData.email}
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
+                autoComplete="off"
                 className="w-full p-2 mb-4 border rounded"
               />
             </>
@@ -225,6 +227,7 @@ export default function Signup() {
                 value={formData.password}
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
+                autoComplete="new-password"
                 className="w-full p-2 mb-4 border rounded"
               />
             </>
