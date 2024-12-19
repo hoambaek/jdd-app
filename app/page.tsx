@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { Video } from 'some-video-library';
 
 // Pretendard 폰트 가져오기
 import "../app/globals.css"; // 이 파일에 @import 추가
@@ -18,7 +19,6 @@ export default function Home() {
       // 비디오 캐싱을 위한 설정
       videoRef.current.preload = "auto";
     }
-
     // 다른 페이지의 비디오도 미리 로드
     const preloadVideo = new Video();
     preloadVideo.src = "/bg.mp4";
