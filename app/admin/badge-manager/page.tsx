@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { BadgeLink } from '@/components/BadgeLink';
 import { BadgeQRCode } from '@/components/qrcode';
 import { createBadgeLink } from '@/utils/badge';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -13,10 +12,8 @@ const supabase = createClient(
 );
 
 export default function AdminPage() {
-  const [loading, setLoading] = useState(true);
   const [badges, setBadges] = useState<any[]>([]);
-  const [selectedBadge, setSelectedBadge] = useState<any>(null);
-  const [badgeUrl, setBadgeUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -98,52 +95,29 @@ export default function AdminPage() {
 
   const handleGenerateLink = async (badge: any) => {
     try {
-      console.log('Generating QR code for badge:', badge);
-      setSelectedBadge(badge);
-
-      if (!badge.id) {
-        throw new Error('배지 ID가 없습니다.');
-      }
-
       const url = await createBadgeLink(badge.id);
-      console.log('Generated URL:', url);
+      if (!url) throw new Error('링크 생성에 실패했습니다.');
 
-      if (!url) {
-        throw new Error('링크 생성에 실패했습니다.');
-      }
-
-      // QR 코드 URL만 업데이트
-      const { data: updatedBadge, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('badges')
         .update({ qr_code_url: url })
         .eq('id', badge.id)
         .select('*')
         .single();
 
-      if (updateError) {
-        console.error('Database update error:', updateError);
-        throw new Error(`QR 코드 URL 저장 실패: ${updateError.message}`);
-      }
+      if (updateError) throw updateError;
 
-      if (!updatedBadge) {
-        throw new Error('업데이트된 배지 정보를 찾을 수 없습니다.');
-      }
-
-      console.log('Successfully updated badge with QR code:', updatedBadge);
-
-      // 상태 업데이트
-      setBadgeUrl(url);
       setBadges(prevBadges => 
         prevBadges.map(b => 
-          b.id === badge.id ? updatedBadge : b
+          b.id === badge.id ? { ...b, qr_code_url: url } : b
         )
       );
 
       alert('QR 코드가 성공적으로 생성되었습니다!');
 
-    } catch (err: any) {
-      console.error('Complete error details:', err);
-      alert(err.message || 'QR 코드 생성 중 오류가 발생했습니다.');
+    } catch (error: any) {
+      console.error('Error:', error);
+      alert(error.message || 'QR 코드 생성 중 오류가 발생했습니다.');
     }
   };
 

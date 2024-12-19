@@ -2,7 +2,8 @@
 const nextConfig = {
   images: {
     domains: [
-      `${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID}.supabase.co`
+      `${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID}.supabase.co`,
+      'your-image-domain.com'
     ],
   },
 };

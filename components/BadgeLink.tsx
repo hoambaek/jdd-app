@@ -37,18 +37,10 @@ export async function createBadgeLink(badgeId: number): Promise<string> {
   }
 }
 
-export function BadgeLink({ badgeId, userId }: { badgeId: string, userId: string }) {
-  const badgeUrl = generateBadgeUrl(badgeId, userId);
-  
-  return (
-    <div className="p-4 border rounded">
-      <p>아래 링크를 방문하여 배지를 획득하세요:</p>
-      <a 
-        href={badgeUrl}
-        className="text-blue-500 hover:underline"
-      >
-        배지 획득하기
-      </a>
-    </div>
-  );
-} 
+interface BadgeLinkProps {
+  data?: any; // 사용하지 않는 prop 제거
+}
+
+export const BadgeLink: React.FC<BadgeLinkProps> = () => {
+  // 구현
+}; 
