@@ -171,7 +171,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="off"
-                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
+                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -186,7 +186,7 @@ export default function Signup() {
                 value={formData.baptismalName}
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
-                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
+                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -198,7 +198,7 @@ export default function Signup() {
                 name="grade"
                 value={formData.grade}
                 onChange={handleChange}
-                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white text-center appearance-none outline-none focus:ring-0"
+                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white text-center appearance-none outline-none focus:ring-0"
                 style={{ padding: '0.5rem', lineHeight: '1.5rem' }}
               >
                 <option value="">학년 선택</option>
@@ -223,7 +223,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="off"
-                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
+                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -239,7 +239,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="new-password"
-                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
+                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
