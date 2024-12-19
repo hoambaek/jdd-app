@@ -1,52 +1,59 @@
 "use client";
 
 import React, { useState } from 'react';
-import { supabase } from '../../utils/supabaseClient'; // Supabase 클라이언트 가져오기
-import { useRouter } from 'next/navigation';
+import { supabase } from '../../utils/supabaseClient';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const router = useRouter();
 
-  const handlePasswordReset = async () => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const handleResetRequest = async () => {
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
 
-    if (error) {
-      setMessage('이메일 전송에 실패했습니다. 다시 시도해주세요.');
-    } else {
-      setMessage('비밀번호 재설정 이메일이 전송되었습니다. 메일을 확인해주세요.');
+      if (error) {
+        setMessage('비밀번호 재설정 이메일 전송에 실패했습니다.');
+        console.error(error);
+      } else {
+        setMessage('비밀번호 재설정 링크를 이메일로 전송했습니다.');
+        setEmail('');
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage('오류가 발생했습니다. 다시 시도해 주세요.');
     }
   };
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <div className="p-8 rounded-lg w-96 bg-white" style={{ boxShadow: 'none' }}>
-        <h1 className="text-2xl font-bold text-center mb-4">비밀번호를 잊어렸나요?</h1>
-        <p className="text-center mb-6">이메일 입력 후 비밀번호를 재설정하세요.</p>
+      <div className="p-8 rounded-lg w-96 bg-white">
+        <h1 className="text-2xl font-bold text-center mb-4">비밀번호 찾기</h1>
         <input
           type="email"
-          placeholder="Enter your email address"
+          placeholder="이메일을 입력해주세요"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border rounded p-2 w-full mb-4"
+          className="border rounded-md p-2 w-full mb-4 text-center"
         />
         <button
-          onClick={handlePasswordReset}
+          onClick={handleResetRequest}
           className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full w-full"
-          style={{ boxShadow: 'none' }}
         >
-          재설정 메일 보내기
+          비밀번호 재설정 이메일 받기
         </button>
         {message && <p className="text-center mt-4">{message}</p>}
-        <button
-          onClick={() => router.push('/login')}
-          className="text-blue-500 mt-4 block text-center mx-auto rounded-full"
-          style={{ boxShadow: 'none' }}
-        >
-          다시 로그인하기
-        </button>
       </div>
+      <style jsx>{`
+        input::placeholder {
+          color: gray;
+          text-align: center;
+        }
+        input:focus::placeholder {
+          color: transparent;
+        }
+      `}</style>
     </div>
   );
 };

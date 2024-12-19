@@ -11,20 +11,26 @@ const ResetPasswordPage = () => {
   const router = useRouter();
 
   const handlePasswordReset = async () => {
-    if (password !== confirmPassword) {
-      setMessage('비밀번호가 일치하지 않습니다.');
-      return;
-    }
+    try {
+      if (password !== confirmPassword) {
+        setMessage('비밀번호가 일치하지 않습니다.');
+        return;
+      }
 
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
+      const { error } = await supabase.auth.updateUser({
+        password: password
+      });
 
-    if (error) {
-      setMessage("비밀번호 재설정에 실패했습니다. 다시 입력해 주세요.");
-    } else {
-      setMessage('비밀번호가 성공적으로 재설정되었습니다.');
-      setTimeout(() => router.push('/login'), 3000); // 3초 후 로그인 페이지로 이동
+      if (error) {
+        setMessage("비밀번호 재설정에 실패했습니다. 다시 시도해 주세요.");
+        console.error('Error resetting password:', error.message);
+      } else {
+        setMessage('비밀번호가 성공적으로 재설정되었습니다.');
+        setTimeout(() => router.push('/login'), 3000);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setMessage('오류가 발생했습니다. 다시 시도해 주세요.');
     }
   };
 

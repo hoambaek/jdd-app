@@ -160,7 +160,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="off"
-                className="w-full p-2 mb-4 border rounded"
+                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -175,7 +175,7 @@ export default function Signup() {
                 value={formData.baptismalName}
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
-                className="w-full p-2 mb-4 border rounded"
+                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -187,7 +187,7 @@ export default function Signup() {
                 name="grade"
                 value={formData.grade}
                 onChange={handleChange}
-                className="w-full p-2 mb-4 border rounded h-11"
+                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white text-center appearance-none outline-none focus:ring-0"
                 style={{ padding: '0.5rem', lineHeight: '1.5rem' }}
               >
                 <option value="">학년 선택</option>
@@ -212,7 +212,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="off"
-                className="w-full p-2 mb-4 border rounded"
+                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -228,7 +228,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="new-password"
-                className="w-full p-2 mb-4 border rounded"
+                className="w-full p-2 mb-4 rounded-full bg-gray-500/50 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -237,12 +237,13 @@ export default function Signup() {
             <button
               onClick={handlePrevious}
               disabled={step === 1}
-              className="btn-grad disabled:opacity-50"
+              className="btn-grad disabled:opacity-50 px-4 py-1"
               style={{
                 background: "transparent",
-                border: "2px solid #4CB8C4",
+                border: "2px solid white",
                 borderRadius: "50px",
-                color: "#4CB8C4"
+                color: "white",
+                boxShadow: "none"
               }}
             >
               이전
@@ -250,16 +251,26 @@ export default function Signup() {
             {step < 5 ? (
               <button
                 onClick={handleNext}
-                className="btn-grad"
-                style={{ borderRadius: "50px" }}
+                className="btn-grad px-4 py-1"
+                style={{ 
+                  background: "white",
+                  borderRadius: "50px",
+                  boxShadow: "none",
+                  color: "#4CB8C4"
+                }}
               >
                 다음
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                className="btn-grad"
-                style={{ borderRadius: "50px" }}
+                className="btn-grad px-4 py-1"
+                style={{ 
+                  background: "white",
+                  borderRadius: "50px",
+                  boxShadow: "none",
+                  color: "#4CB8C4"
+                }}
               >
                 가입
               </button>
