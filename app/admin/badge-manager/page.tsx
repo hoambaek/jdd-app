@@ -14,12 +14,18 @@ interface Badge {
   image_url: string;
   qr_code_url?: string;
   month: number;
+  position: number;
 }
 
 interface FormData {
   name: string;
   description: string;
   image_url: string;
+}
+
+// 타입 정의 추가
+interface UpdatedBadge extends Badge {
+  created_at?: string;
 }
 
 const supabase = createClient(
@@ -77,7 +83,7 @@ export default function AdminPage() {
   const loadBadges = async () => {
     try {
       setLoading(true);
-      await checkAdmin(); // 관리자 권한 체크 먼저 수행
+      await checkAdmin();
 
       if (!isAdmin) {
         return;
@@ -90,7 +96,8 @@ export default function AdminPage() {
 
       if (error) throw error;
 
-      setBadges(data || []);
+      // 타입 단언 추가
+      setBadges(data as Badge[] || []);
       setError(null);
     } catch (error: any) {
       console.error('Error:', error);
@@ -101,8 +108,8 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    loadBadges();
-  }, []);
+    void loadBadges();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerateLink = async (badge: Badge) => {
     try {
@@ -113,14 +120,15 @@ export default function AdminPage() {
         .from('badges')
         .update({ qr_code_url: url })
         .eq('id', badge.id)
-        .select('*')
+        .select()
         .single();
 
       if (updateError) throw updateError;
 
+      // 타입 단언 추가
       setBadges(prevBadges => 
         prevBadges.map(b => 
-          b.id === badge.id ? { ...b, qr_code_url: url } : b
+          b.id === badge.id ? { ...b, qr_code_url: url } as Badge : b
         )
       );
 
@@ -135,13 +143,23 @@ export default function AdminPage() {
   const handleCreateBadge = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (!formData.name || !formData.description || !formData.image_url) {
+        throw new Error('모든 필드를 입력해주세요.');
+      }
+
       const currentMonth = new Date().getMonth() + 1;
+
+      // 현재 배지들의 최대 position 값 구하기
+      const maxPosition = badges.length > 0 
+        ? Math.max(...badges.map(b => b.position || 0))
+        : 0;
 
       const { data, error } = await supabase
         .from('badges')
         .insert([{
           ...formData,
-          month: currentMonth
+          month: currentMonth,
+          position: maxPosition + 1  // position 값 추가
         }])
         .select('*')
         .single();
