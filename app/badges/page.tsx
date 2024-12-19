@@ -68,13 +68,17 @@ export default function BadgeCollection() {
       const formattedBadges = badgesData.map(badge => {
         const monthStr = badge.month.toString().padStart(2, '0');
         const positionStr = badge.position.toString().padStart(2, '0');
-        const folderName = `${monthStr}_${getMonthName(badge.month)}`;
+        const folderName = `${monthStr}_${monthNames[badge.month - 1].toLowerCase()}`;
         const fileName = `badge_${positionStr}.png`;
-        const filePath = `badges/${folderName}/${fileName}`;
+        const filePath = `${folderName}/${fileName}`;
 
         const { data: { publicUrl } } = supabase.storage
           .from('badges')
           .getPublicUrl(filePath);
+
+        console.log('월:', badge.month, '위치:', badge.position);
+        console.log('생성된 경로:', filePath);
+        console.log('최종 URL:', publicUrl);
 
         return {
           ...badge,
@@ -89,15 +93,6 @@ export default function BadgeCollection() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getMonthName = (month: number): string => {
-    const months = [
-      'january', 'february', 'march', 'april',
-      'may', 'june', 'july', 'august',
-      'september', 'october', 'november', 'december'
-    ];
-    return months[month - 1];
   };
 
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -131,41 +126,33 @@ export default function BadgeCollection() {
                 <span className="ml-2 text-lg text-gray-400">January</span>
               </div>
               
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-6">
-                {badges
-                  .filter(badge => badge.month === month)
-                  .map(badge => (
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                {Array(6).fill(null).map((_, position) => {
+                  const badge = badges.find(b => b.month === month && b.position === position + 1);
+                  
+                  return (
                     <div 
-                      key={badge.id}
+                      key={`${month}-${position}`}
                       className="relative aspect-square"
                     >
                       <Image
-                        src={badge.image_url}
-                        alt={badge.name}
+                        src={badge?.image_url || '/badges/placeholder-badge.png'}
+                        alt={badge?.name || '배지'}
                         fill
                         className={`
                           object-contain p-1
-                          ${badge.is_collected ? 'opacity-100' : 'opacity-30 grayscale'}
+                          ${badge?.is_collected ? 'opacity-100' : 'opacity-80 grayscale'}
                         `}
                         loading="lazy"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder-badge.png'; // 기본 이미지 경로
+                          target.src = '/badges/placeholder-badge.png';
+                          console.error('이미지 로딩 실패:', badge?.image_url);
                         }}
                       />
-                      
-                      {!badge.is_collected && (
-                        <a
-                          href={`/badge/${badge.id}/${userId}`}
-                          className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                        >
-                          <div className="w-full h-full flex items-center justify-center rounded-full border-2 border-gray-500 hover:border-white transition-colors">
-                            <span className="text-sm text-white">획득하기</span>
-                          </div>
-                        </a>
-                      )}
                     </div>
-                  ))}
+                  );
+                })}
               </div>
             </div>
           ))}
