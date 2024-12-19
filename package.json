@@ -9,12 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.47.8",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "next": "14.2.16",
+    "qrcode.react": "^4.2.0",
     "react": "^18",
     "react-confetti": "^6.1.0",
     "react-dom": "^18",

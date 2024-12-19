@@ -15,6 +15,7 @@ export default function Signup() {
     grade: "",
     email: "",
     password: "",
+    role: "user",
   });
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -92,6 +93,7 @@ export default function Signup() {
           baptismalName: formData.baptismalName,
           grade: formData.grade,
           email: formData.email,
+          role: formData.role,
         },
       ]);
 
@@ -208,6 +210,7 @@ export default function Signup() {
                 <option value="고1">고1</option>
                 <option value="고2">고2</option>
                 <option value="고3">고3</option>
+                <option value="선생님">선생님</option>
               </select>
             </>
           )}
