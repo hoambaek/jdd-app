@@ -2,22 +2,40 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 // Pretendard 폰트 가져오기
 import "../app/globals.css"; // 이 파일에 @import 추가
 
 export default function Home() {
   const router = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // 비디오 프리로드
+    if (videoRef.current) {
+      videoRef.current.load();
+      // 비디오 캐싱을 위한 설정
+      videoRef.current.preload = "auto";
+    }
+
+    // 다른 페이지의 비디오도 미리 로드
+    const preloadVideo = new Video();
+    preloadVideo.src = "/bg.mp4";
+    preloadVideo.preload = "auto";
+  }, []);
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden font-pretendard">
       <video
+        ref={videoRef}
         className="absolute top-0 left-0 w-full h-full object-cover"
         src="/bg.mp4"
         autoPlay
         loop
         muted
         playsInline
+        preload="auto"
       />
       <div className="absolute top-0 left-0 w-full h-full bg-black" style={{ opacity: 0.17 }}></div>
       <div className="relative z-10 text-center text-white">

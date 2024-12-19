@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from 'next/navigation';
 
@@ -22,6 +22,7 @@ export default function Signup() {
   const gradeRef = useRef<HTMLSelectElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     switch (step) {
@@ -44,6 +45,14 @@ export default function Signup() {
         break;
     }
   }, [step]);
+
+  useEffect(() => {
+    // 비디오 프리로드
+    if (videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.preload = "auto";
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -114,10 +123,12 @@ export default function Signup() {
   return (
     <div className="relative flex justify-center items-center min-h-screen">
       <video
+        ref={videoRef}
         autoPlay
         loop
         muted
         playsInline
+        preload="auto"
         className="absolute w-full h-full object-cover"
         style={{ zIndex: -1 }}
       >

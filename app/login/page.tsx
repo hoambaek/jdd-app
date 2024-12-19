@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { supabase } from '../../utils/supabaseClient'; // Supabase 클라이언트 가져오기
@@ -14,12 +14,21 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
       setEmail(savedEmail);
       setRememberMe(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    // 비디오 프리로드
+    if (videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.preload = "auto";
     }
   }, []);
 
@@ -55,11 +64,13 @@ const LoginPage = () => {
         </div>
       )}
       <video
+        ref={videoRef}
         autoPlay
         loop
         muted
         playsInline
         webkit-playsinline
+        preload="auto"
         className="absolute w-full h-full object-cover"
       >
         <source src="bg.mp4" type="video/mp4" />
