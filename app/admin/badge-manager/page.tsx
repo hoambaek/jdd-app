@@ -83,24 +83,31 @@ export default function AdminPage() {
   const loadBadges = async () => {
     try {
       setLoading(true);
-      await checkAdmin();
-
-      if (!isAdmin) {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setError('로그인이 필요합니다.');
         return;
       }
 
-      const { data, error } = await supabase
+      // 배지 데이터 가져오기
+      const { data: badgesData, error: badgesError } = await supabase
         .from('badges')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (badgesError) {
+        console.error('Error fetching badges:', badgesError);
+        throw badgesError;
+      }
 
-      // 타입 단언 추가
-      setBadges(data as Badge[] || []);
+      console.log('Loaded badges:', badgesData);
+      setBadges(badgesData || []);
+      setIsAdmin(true);
       setError(null);
+      
     } catch (error: any) {
-      console.error('Error:', error);
+      console.error('Error in loadBadges:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -108,8 +115,8 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    void loadBadges();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    loadBadges();
+  }, []);
 
   const handleGenerateLink = async (badge: Badge) => {
     try {
@@ -148,32 +155,57 @@ export default function AdminPage() {
       }
 
       const currentMonth = new Date().getMonth() + 1;
-
-      // 현재 배지들의 최대 position 값 구하기
       const maxPosition = badges.length > 0 
         ? Math.max(...badges.map(b => b.position || 0))
         : 0;
 
-      const { data, error } = await supabase
+      const newBadgeData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        image_url: formData.image_url.trim(),
+        month: currentMonth,
+        position: maxPosition + 1,
+        created_at: new Date().toISOString()
+      };
+
+      console.log('Creating badge with data:', newBadgeData);
+
+      const { data: newBadge, error } = await supabase
         .from('badges')
-        .insert([{
-          ...formData,
-          month: currentMonth,
-          position: maxPosition + 1  // position 값 추가
-        }])
+        .insert([newBadgeData])
         .select('*')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(`배지 생성 실패: ${error.message}`);
+      }
 
-      setBadges(prevBadges => [data as Badge, ...prevBadges]);
-      setFormData({ name: '', description: '', image_url: '' });
+      if (!newBadge) {
+        throw new Error('배지 데이터 생성 실패');
+      }
+
+      console.log('Successfully created badge:', newBadge);
+
+      // 상로운 배지 데이터로 상태 업데이트
+      setBadges(prevBadges => [newBadge, ...prevBadges]);
+      
+      // 폼 초기화
+      setFormData({
+        name: '',
+        description: '',
+        image_url: ''
+      });
+      
       setIsEditMode(false);
       alert('배지가 성공적으로 생성되었습니다!');
 
-    } catch (error: any) {
-      console.error('Error:', error);
-      alert(error.message || '배지 생성 중 오류가 발생했습니다.');
+      // 배지 목록 새로고침
+      await loadBadges();
+
+    } catch (err: any) {
+      console.error('Error creating badge:', err);
+      alert(err.message || '배지 생성 중 오류가 발생했습니다.');
     }
   };
 
