@@ -6,99 +6,110 @@ import { BadgeQRCode } from '@/components/qrcode';
 import { createBadgeLink } from '@/utils/badge';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
+// 타입 정의
+interface Badge {
+  id: number;
+  name: string;
+  description: string;
+  image_url: string;
+  qr_code_url?: string;
+  month: number;
+}
+
+interface FormData {
+  name: string;
+  description: string;
+  image_url: string;
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export default function AdminPage() {
-  const [badges, setBadges] = useState<any[]>([]);
+  const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingBadge, setEditingBadge] = useState<any>(null);
-  const [formData, setFormData] = useState({
+  const [editingBadge, setEditingBadge] = useState<Badge | null>(null);
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
     image_url: ''
   });
 
-  useEffect(() => {
-    checkAdminAndLoadBadges();
-  }, []);
-
-  const checkAdminAndLoadBadges = async () => {
+  const checkAdmin = async () => {
     try {
-      setLoading(true);
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      // 1. 사용자 확인
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      console.log('User check:', user, userError); // 디버깅용
+      if (sessionError) throw sessionError;
       
-      if (userError) {
-        console.error('User error:', userError);
-        setError('사용자 인증 오류가 발생했습니다.');
-        return;
-      }
-      
-      if (!user) {
+      if (!session) {
+        setIsAdmin(false);
         setError('로그인이 필요합니다.');
         return;
       }
 
-      // 2. 관리자 권한 확인
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
+        .select('role')
+        .eq('id', session.user.id)
         .single();
-      
-      console.log('Profile check:', profile, profileError); // 디버깅용
 
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        setError('프로필 정보를 불러올 수 없습니다.');
-        return;
-      }
+      if (profileError) throw profileError;
 
-      if (!profile?.is_admin) {
+      if (profile?.role === 'admin') {
+        setIsAdmin(true);
+        setError(null);
+      } else {
+        setIsAdmin(false);
         setError('관리자 권한이 없습니다.');
+      }
+    } catch (error: any) {
+      console.error('Admin check error:', error);
+      setIsAdmin(false);
+      setError('권한 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  const loadBadges = async () => {
+    try {
+      setLoading(true);
+      await checkAdmin(); // 관리자 권한 체크 먼저 수행
+
+      if (!isAdmin) {
         return;
       }
 
-      setIsAdmin(true);
-
-      // 3. 배지 목록 로드
-      const { data: badgeData, error: badgeError } = await supabase
+      const { data, error } = await supabase
         .from('badges')
         .select('*')
-        .order('id', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      console.log('Badge data:', badgeData, badgeError); // 디버깅용
+      if (error) throw error;
 
-      if (badgeError) {
-        console.error('Badge error:', badgeError);
-        throw badgeError;
-      }
-
-      setBadges(badgeData || []);
+      setBadges(data || []);
       setError(null);
-
-    } catch (err: any) {
-      console.error('Detailed error:', err);
-      setError(err.message || '데이터를 불러오는 중 오류가 발생했습니다.');
+    } catch (error: any) {
+      console.error('Error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGenerateLink = async (badge: any) => {
+  useEffect(() => {
+    loadBadges();
+  }, []);
+
+  const handleGenerateLink = async (badge: Badge) => {
     try {
       const url = await createBadgeLink(badge.id);
       if (!url) throw new Error('링크 생성에 실패했습니다.');
 
-      const { error: updateError } = await supabase
+      const { data: updatedBadge, error: updateError } = await supabase
         .from('badges')
         .update({ qr_code_url: url })
         .eq('id', badge.id)
@@ -124,95 +135,45 @@ export default function AdminPage() {
   const handleCreateBadge = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // 폼 데이터 검증
-      if (!formData.name || !formData.description || !formData.image_url) {
-        throw new Error('모든 필드를 입력해주세요.');
-      }
-
-      // 현재 월 구하기 (1-12)
       const currentMonth = new Date().getMonth() + 1;
 
-      // 현재 배지들의 최대 position 값 구하기
-      const maxPosition = badges.length > 0 
-        ? Math.max(...badges.map(b => b.position))
-        : 0;
-
-      console.log('Attempting to create badge with data:', {
-        ...formData,
-        month: currentMonth,
-        position: maxPosition + 1
-      });
-
-      // 배지 생성
       const { data, error } = await supabase
         .from('badges')
         .insert([{
-          name: formData.name.trim(),
-          description: formData.description.trim(),
-          image_url: formData.image_url.trim(),
-          month: currentMonth,
-          position: maxPosition + 1  // 새로운 position 값 추가
+          ...formData,
+          month: currentMonth
         }])
-        .select('*');
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw new Error(`배지 생성 실패: ${error.message}`);
-      }
-
-      if (!data || data.length === 0) {
-        throw new Error('배지 데이터 생성 실패');
-      }
-
-      console.log('Successfully created badge:', data[0]);
-
-      // 상태 업데이트
-      setBadges(prevBadges => [data[0], ...prevBadges]);
-      setFormData({ name: '', description: '', image_url: '' });
-      setIsEditMode(false);
-
-      alert('배지가 성공적으로 생성되었습니다!');
-
-    } catch (err: any) {
-      console.error('Error creating badge:', err);
-      alert(err.message || '배지 생성 중 오류가 발생했습니다.');
-    }
-  };
-
-  const handleUpdateBadge = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const { error } = await supabase
-        .from('badges')
-        .update(formData)
-        .eq('id', editingBadge.id);
+        .select('*')
+        .single();
 
       if (error) throw error;
-      
-      setBadges(badges.map(b => 
-        b.id === editingBadge.id ? { ...b, ...formData } : b
-      ));
-      setEditingBadge(null);
+
+      setBadges(prevBadges => [data as Badge, ...prevBadges]);
       setFormData({ name: '', description: '', image_url: '' });
-    } catch (err: any) {
-      alert('배지 수정 중 오류가 발생했습니다.');
+      setIsEditMode(false);
+      alert('배지가 성공적으로 생성되었습니다!');
+
+    } catch (error: any) {
+      console.error('Error:', error);
+      alert(error.message || '배지 생성 중 오류가 발생했습니다.');
     }
   };
 
-  const handleDeleteBadge = async (badgeId: number) => {
-    if (!window.confirm('정말로 이 배지를 삭제하시겠습니까?')) return;
-    
+  const handleDeleteBadge = async (id: number) => {
     try {
       const { error } = await supabase
         .from('badges')
         .delete()
-        .eq('id', badgeId);
+        .eq('id', id);
 
       if (error) throw error;
-      
-      setBadges(badges.filter(b => b.id !== badgeId));
-    } catch (err: any) {
-      alert('배지 삭제 중 오류가 발생했습니다.');
+
+      setBadges(prevBadges => prevBadges.filter(badge => badge.id !== id));
+      alert('배지가 성공적으로 삭제되었습니다!');
+
+    } catch (error: any) {
+      console.error('Error:', error);
+      alert(error.message || '배지 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -232,7 +193,7 @@ export default function AdminPage() {
         <div className="text-center">
           <h1 className="text-2xl">{error || '접근 권한이 없습니다.'}</h1>
           <button 
-            onClick={checkAdminAndLoadBadges}
+            onClick={loadBadges}
             className="mt-4 px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
           >
             다시 시도
@@ -316,9 +277,9 @@ export default function AdminPage() {
             key={badge.id} 
             className="p-4 border border-gray-700 rounded-lg"
           >
-            {badge.imageUrl && (
+            {badge.image_url && (
               <img 
-                src={badge.imageUrl} 
+                src={badge.image_url} 
                 alt={badge.name}
                 className="w-full h-48 object-cover rounded mb-4"
               />
@@ -340,7 +301,7 @@ export default function AdminPage() {
                   setFormData({
                     name: badge.name,
                     description: badge.description,
-                    image_url: badge.imageUrl || ''
+                    image_url: badge.image_url || ''
                   });
                 }}
                 className="flex items-center gap-1 px-3 py-1 bg-yellow-600 rounded hover:bg-yellow-700"
