@@ -127,7 +127,10 @@ export default function BadgeCollection() {
                         fill
                         className={`
                           object-contain p-1
-                          ${badge?.is_collected ? 'opacity-100' : 'opacity-10'}
+                          ${badge?.is_collected 
+                            ? 'opacity-100' 
+                            : 'opacity-20 grayscale'
+                          }
                         `}
                         loading="lazy"
                         onError={(e) => {
