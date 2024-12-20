@@ -142,7 +142,7 @@ export default function MyPage() {
             className="rounded-full object-cover"
             priority
           />
-          <div className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full">
+          <div className="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
             </svg>
@@ -217,7 +217,7 @@ export default function MyPage() {
         <div className="mt-6">
           <button
             onClick={() => router.push('/admin/feed')}
-            className="w-full bg-primary text-white py-3 rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
+            className="w-full bg-black text-white py-3 rounded-lg shadow-sm hover:bg-black/90 transition-colors"
           >
             피드 관리
           </button>
