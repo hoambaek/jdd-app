@@ -1,0 +1,42 @@
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+  text-decoration: none;
+  font-size: 0.75rem;
+}
+
+.active .navItem {
+  color: #007bff;
+}
+
+.active .navItem svg {
+  stroke: #007bff;
+}
+
+.navItem svg {
+  stroke: #666;
+  transition: stroke 0.2s ease;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottomNav {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+} 

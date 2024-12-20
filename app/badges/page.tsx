@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import BottomNav from '../components/BottomNav';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -81,7 +82,7 @@ export default function BadgeCollection() {
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 py-8">
+    <div className="min-h-screen bg-black text-white px-4 py-8 pb-24">
       {loading ? (
         <div className="container mx-auto max-w-6xl">
           <div className="animate-pulse">
@@ -98,54 +99,57 @@ export default function BadgeCollection() {
           </div>
         </div>
       ) : (
-        <div className="container mx-auto max-w-6xl">
-          <h1 className="text-3xl font-bold mb-2">나의 배지 현황</h1>
-          <p className="text-gray-400 mb-12">
-            매월 출석체크와 다양한 활동에 참여하여<br />
-            특별한 배지를 수집해보세요! 😘
-          </p>
-          
-          {months.map(month => (
-            <div key={month} className="mb-16">
-              <div className="flex items-baseline mb-6">
-                <h2 className="text-2xl font-bold">{month}월</h2>
-                <span className="ml-2 text-lg text-gray-400">January</span>
+        <>
+          <div className="container mx-auto max-w-6xl">
+            <h1 className="text-3xl font-bold mb-2">나의 배지 현황</h1>
+            <p className="text-gray-400 mb-12">
+              매월 출석체크와 다양한 활동에 참여하여<br />
+              특별한 배지를 수집해보세요! 😘
+            </p>
+            
+            {months.map(month => (
+              <div key={month} className="mb-16">
+                <div className="flex items-baseline mb-6">
+                  <h2 className="text-2xl font-bold">{month}월</h2>
+                  <span className="ml-2 text-lg text-gray-400">January</span>
+                </div>
+                
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                  {Array(6).fill(null).map((_, position) => {
+                    const badge = badges.find(b => b.month === month && b.position === position + 1);
+                    
+                    return (
+                      <div 
+                        key={`${month}-${position}`}
+                        className="relative aspect-square"
+                      >
+                        <Image
+                          src={badge?.image_url || '/badges/placeholder-badge.png'}
+                          alt={badge?.name || '배지'}
+                          fill
+                          className={`
+                            object-contain p-1
+                            ${badge?.is_collected 
+                              ? 'opacity-100' 
+                              : 'opacity-20 grayscale'
+                            }
+                          `}
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/badges/placeholder-badge.png';
+                            console.error('이미지 로딩 실패:', badge?.image_url);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {Array(6).fill(null).map((_, position) => {
-                  const badge = badges.find(b => b.month === month && b.position === position + 1);
-                  
-                  return (
-                    <div 
-                      key={`${month}-${position}`}
-                      className="relative aspect-square"
-                    >
-                      <Image
-                        src={badge?.image_url || '/badges/placeholder-badge.png'}
-                        alt={badge?.name || '배지'}
-                        fill
-                        className={`
-                          object-contain p-1
-                          ${badge?.is_collected 
-                            ? 'opacity-100' 
-                            : 'opacity-20 grayscale'
-                          }
-                        `}
-                        loading="lazy"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/badges/placeholder-badge.png';
-                          console.error('이미지 로딩 실패:', badge?.image_url);
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          <BottomNav />
+        </>
       )}
     </div>
   );

@@ -1,0 +1,155 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f5f5f5, #e0e0e0);
+  padding: 20px;
+  padding-bottom: 80px;
+}
+
+.feedContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feedItem {
+  width: 100%;
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  cursor: pointer;
+}
+
+.feedItem img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: filter 0.3s ease;
+}
+
+.feedOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.selected img {
+  filter: blur(5px);
+}
+
+.selected .feedOverlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.feedOverlay h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.feedOverlay p {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  white-space: pre-line;
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+.feedOverlay p::-webkit-scrollbar {
+  width: 4px;
+}
+
+.feedOverlay p::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.feedOverlay p::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.feedOverlay p::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.875rem;
+}
+
+.feedItem:hover img {
+  transform: scale(1.02);
+  transition: transform 0.3s ease;
+}
+
+.selected:hover img {
+  transform: none;
+}
+
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+  text-decoration: none;
+  font-size: 0.75rem;
+}
+
+.active .navItem {
+  color: #007bff;
+}
+
+.active .navItem svg {
+  stroke: #007bff;
+}
+
+.navItem svg {
+  stroke: #666;
+  transition: stroke 0.2s ease;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottomNav {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+} 
