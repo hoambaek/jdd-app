@@ -14,6 +14,7 @@
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "firebase": "^10.8.0",
     "lucide-react": "^0.468.0",
     "next": "14.2.16",
     "qrcode.react": "^4.2.0",

@@ -256,124 +256,45 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <h1 className="text-3xl font-bold mb-8">배지 관리</h1>
-      
-      <button
-        onClick={() => setIsEditMode(true)}
-        className="mb-8 flex items-center gap-2 px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
-      >
-        <PlusIcon className="w-5 h-5" />
-        새 배지 만들기
-      </button>
 
-      {(isEditMode || editingBadge) && (
-        <form 
-          onSubmit={editingBadge ? handleUpdateBadge : handleCreateBadge}
-          className="mb-8 p-6 border border-gray-700 rounded-lg"
-        >
-          <h2 className="text-xl font-semibold mb-4">
-            {editingBadge ? '배지 수정' : '새 배지 만들기'}
-          </h2>
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="배지 이름"
-              value={formData.name}
-              onChange={e => setFormData({...formData, name: e.target.value})}
-              className="w-full p-2 bg-gray-800 rounded"
-              required
-            />
-            <input
-              type="text"
-              placeholder="배지 설명"
-              value={formData.description}
-              onChange={e => setFormData({...formData, description: e.target.value})}
-              className="w-full p-2 bg-gray-800 rounded"
-              required
-            />
-            <input
-              type="url"
-              placeholder="이미지 URL"
-              value={formData.image_url}
-              onChange={e => setFormData({...formData, image_url: e.target.value})}
-              className="w-full p-2 bg-gray-800 rounded"
-              required
-            />
-          </div>
-          <div className="mt-4 space-x-4">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
-            >
-              {editingBadge ? '수정하기' : '만들기'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditMode(false);
-                setEditingBadge(null);
-                setFormData({ name: '', description: '', image_url: '' });
-              }}
-              className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700"
-            >
-              취소
-            </button>
-          </div>
-        </form>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {Array.from({ length: 12 }, (_, month) => (
+          <div key={month} className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">{month + 1}월</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {badges
+                .filter(badge => badge.month === month + 1)
+                .sort((a, b) => a.position - b.position)
+                .map(badge => (
+                  <div key={badge.id} className="p-2 border border-gray-700 rounded-lg">
+                    {badge.image_url && (
+                      <img
+                        src={badge.image_url}
+                        alt={badge.name}
+                        className="w-full h-32 object-cover rounded mb-2"
+                      />
+                    )}
+                    <h3 className="text-lg font-medium">{badge.name}</h3>
+                    <p className="text-gray-400 mt-1">{badge.description}</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {badges.map((badge) => (
-          <div 
-            key={badge.id} 
-            className="p-4 border border-gray-700 rounded-lg"
-          >
-            {badge.image_url && (
-              <img 
-                src={badge.image_url} 
-                alt={badge.name}
-                className="w-full h-48 object-cover rounded mb-4"
-              />
-            )}
-            <h3 className="text-lg font-medium">{badge.name}</h3>
-            <p className="text-gray-400 mt-1">{badge.description}</p>
-            
-            {/* QR 코드 표시 */}
-            {badge.qr_code_url && (
-              <div className="mt-4">
-                <BadgeQRCode url={badge.qr_code_url} />
-              </div>
-            )}
+                    {badge.qr_code_url && (
+                      <div className="mt-2">
+                        <BadgeQRCode url={badge.qr_code_url} />
+                      </div>
+                    )}
 
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => {
-                  setEditingBadge(badge);
-                  setFormData({
-                    name: badge.name,
-                    description: badge.description,
-                    image_url: badge.image_url || ''
-                  });
-                }}
-                className="flex items-center gap-1 px-3 py-1 bg-yellow-600 rounded hover:bg-yellow-700"
-              >
-                <PencilIcon className="w-4 h-4" />
-                수정
-              </button>
-              <button
-                onClick={() => handleDeleteBadge(badge.id)}
-                className="flex items-center gap-1 px-3 py-1 bg-red-600 rounded hover:bg-red-700"
-              >
-                <TrashIcon className="w-4 h-4" />
-                삭제
-              </button>
-              {!badge.qr_code_url && (
-                <button
-                  onClick={() => handleGenerateLink(badge)}
-                  className="flex items-center gap-1 px-3 py-1 bg-green-600 rounded hover:bg-green-700"
-                >
-                  QR코드 생성
-                </button>
-              )}
+                    <div className="mt-2">
+                      {!badge.qr_code_url && (
+                        <button
+                          onClick={() => handleGenerateLink(badge)}
+                          className="flex items-center gap-1 px-2 py-1 bg-green-600 rounded hover:bg-green-700"
+                        >
+                          QR코드 생성
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         ))}
