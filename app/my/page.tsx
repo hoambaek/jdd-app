@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
 import BottomNav from '../components/BottomNav';
+import { useRouter } from 'next/navigation';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,12 +12,15 @@ const supabase = createClient(
 );
 
 export default function MyPage() {
+  const router = useRouter();
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [profileImages, setProfileImages] = useState<string[]>([]);
   const [userData, setUserData] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<string>('/profile-placeholder.png');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    console.log('Component mounted');
     fetchProfileImages();
     fetchUserData();
   }, []);
@@ -49,21 +53,40 @@ export default function MyPage() {
   };
 
   const fetchUserData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      setUserData({
-        ...profileData,
-        email: user.email,
-        church: '장덕동성당'
-      });
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      setSelectedImage(profileData?.avatar_url || '/profile-placeholder.png');
+      if (userError) {
+        console.error('Error fetching user:', userError);
+        return;
+      }
+
+      if (user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          return;
+        }
+
+        // DB의 is_admin 필드로 admin 체크
+        setIsAdmin(profileData?.is_admin || false);
+        console.log('Is admin from DB:', profileData?.is_admin);
+
+        setUserData({
+          ...profileData,
+          email: user.email,
+          church: '장덕동성당'
+        });
+        
+        setSelectedImage(profileData?.avatar_url || '/profile-placeholder.png');
+      }
+    } catch (error) {
+      console.error('Error in fetchUserData:', error);
     }
   };
 
@@ -89,8 +112,20 @@ export default function MyPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      router.push('/'); // 로그아웃 후 메인 페이지로 이동
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  console.log('Rendering with isAdmin:', isAdmin); // 렌더링시 isAdmin 상태 확인
+
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen bg-gray-100 p-4 pb-24">
       <h1 className="text-2xl font-bold mb-6">Profile</h1>
       
       {/* 프로필 이미지 섹션 */}
@@ -176,6 +211,28 @@ export default function MyPage() {
           </div>
         </div>
       )}
+
+      {/* Admin 버튼 */}
+      {isAdmin && (
+        <div className="mt-6">
+          <button
+            onClick={() => router.push('/admin/feed')}
+            className="w-full bg-primary text-white py-3 rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
+          >
+            피드 관리
+          </button>
+        </div>
+      )}
+
+      {/* 로그아웃 버튼 */}
+      <div className="mt-6 mb-20">
+        <button
+          onClick={handleLogout}
+          className="w-full bg-gray-50 text-gray-700 py-3 rounded-lg shadow-sm hover:bg-gray-100 transition-colors border border-gray-200"
+        >
+          로그아웃
+        </button>
+      </div>
       
       <BottomNav />
     </div>
