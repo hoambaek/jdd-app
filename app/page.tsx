@@ -3,13 +3,31 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { createClient } from '@supabase/supabase-js';
 
 // Pretendard 폰트 가져오기
 import "../app/globals.css"; // 이 파일에 @import 추가
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export default function Home() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        router.push('/activity');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   useEffect(() => {
     // 비디오 프리로드
