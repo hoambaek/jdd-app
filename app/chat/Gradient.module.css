@@ -5,19 +5,32 @@
   top: 0;
   left: 0;
   z-index: 0;
-  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background: linear-gradient(135deg, #d81ac8, #2fe806);
   background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
+  animation: gradientAnimation 6s ease-in-out infinite;
 }
 
-@keyframes gradientBG {
+@keyframes gradientAnimation {
   0% {
     background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 0%;
   }
   50% {
     background-position: 100% 50%;
   }
+  75% {
+    background-position: 50% 100%;
+  }
   100% {
     background-position: 0% 50%;
   }
+}
+
+.text {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
 } 
