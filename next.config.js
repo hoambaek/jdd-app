@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['your-image-domain.com'],
+    domains: ['qloytvrhkjviqyzuimio.supabase.co'],
     unoptimized: true
   },
   eslint: {
@@ -9,7 +9,10 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true
-  }
+  },
+  compiler: {
+    styledComponents: true,
+  },
 }
 
 module.exports = nextConfig 

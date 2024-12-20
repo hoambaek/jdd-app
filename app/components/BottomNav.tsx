@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, MessageCircle, Award, User } from 'lucide-react';
+import { LayoutGrid, Book, Award, User } from 'lucide-react';
 import styles from './BottomNav.module.css';
 
 export default function BottomNav() {
@@ -15,9 +15,9 @@ export default function BottomNav() {
       label: 'Activity'
     },
     {
-      href: '/chat',
-      icon: <MessageCircle size={24} />,
-      label: 'Chat'
+      href: '/story',
+      icon: <Book size={24} />,
+      label: 'Story'
     },
     {
       href: '/badges',
