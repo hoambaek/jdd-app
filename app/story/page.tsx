@@ -7,7 +7,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import BottomNav from '../components/bottomNav';
+import BottomNav from '../components/BottomNav';
 
 // Supabase storage URL 추가
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
