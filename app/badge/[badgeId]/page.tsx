@@ -48,6 +48,8 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
 
         if (badgeError) throw badgeError;
 
+        console.log('로드된 배지 정보:', badge);
+
         if (!badge) {
           throw new Error('배지를 찾을 수 없습니다.');
         }
@@ -142,7 +144,9 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
                 src={badge.image_url}
                 alt={badge.name}
                 fill
-                className="rounded-full object-cover"
+                className={`rounded-full object-cover ${
+                  isAlreadyCollected ? 'opacity-100' : 'opacity-10'
+                }`}
               />
             </div>
             <h1 className="text-2xl font-bold mb-2">{badge.name}</h1>

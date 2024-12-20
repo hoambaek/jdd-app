@@ -65,27 +65,10 @@ export default function BadgeCollection() {
         return;
       }
 
-      const formattedBadges = badgesData.map(badge => {
-        const monthStr = badge.month.toString().padStart(2, '0');
-        const positionStr = badge.position.toString().padStart(2, '0');
-        const folderName = `${monthStr}_${monthNames[badge.month - 1].toLowerCase()}`;
-        const fileName = `badge_${positionStr}.png`;
-        const filePath = `${folderName}/${fileName}`;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('badges')
-          .getPublicUrl(filePath);
-
-        console.log('월:', badge.month, '위치:', badge.position);
-        console.log('생성된 경로:', filePath);
-        console.log('최종 URL:', publicUrl);
-
-        return {
-          ...badge,
-          image_url: publicUrl,
-          is_collected: badge.user_badges.some(ub => ub?.user_id === user?.id)
-        };
-      });
+      const formattedBadges = badgesData.map(badge => ({
+        ...badge,
+        is_collected: badge.user_badges.some(ub => ub?.user_id === user?.id)
+      }));
 
       setBadges(formattedBadges);
     } catch (error) {
@@ -116,8 +99,11 @@ export default function BadgeCollection() {
         </div>
       ) : (
         <div className="container mx-auto max-w-6xl">
-          <h1 className="text-3xl font-bold mb-2">나의 리워드 현황</h1>
-          <p className="text-gray-400 mb-12">매월 출석체크와 활동에 참여해서 배지를 모아보세요</p>
+          <h1 className="text-3xl font-bold mb-2">나의 배지 현황</h1>
+          <p className="text-gray-400 mb-12">
+            매월 출석체크와 다양한 활동에 참여하여<br />
+            특별한 배지를 수집해보세요! 😘
+          </p>
           
           {months.map(month => (
             <div key={month} className="mb-16">
@@ -141,7 +127,7 @@ export default function BadgeCollection() {
                         fill
                         className={`
                           object-contain p-1
-                          ${badge?.is_collected ? 'opacity-100' : 'opacity-80 grayscale'}
+                          ${badge?.is_collected ? 'opacity-100' : 'opacity-10'}
                         `}
                         loading="lazy"
                         onError={(e) => {
