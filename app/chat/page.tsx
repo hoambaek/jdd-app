@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../chat/gradient.module.css';
+import styles from '../chat/Gradient.module.css';
 
 const ChatPage: React.FC = () => {
   return (
