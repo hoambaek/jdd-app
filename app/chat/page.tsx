@@ -1,28 +1,26 @@
-'use client';
+import React from 'react';
 
-import BottomNav from '../components/BottomNav';
-
-export default function ChatPage() {
+const ChatPage: React.FC = () => {
   return (
-    <div 
-      className="min-h-screen p-4 pb-24"
-      style={{
-        background: `
-          linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px),
-          #f9f5eb
-        `,
-        backgroundSize: '20px 20px',
-        boxShadow: 'inset 0 0 60px rgba(0,0,0,0.1)'
-      }}
-    >
-      <div className="relative min-h-[calc(100vh-200px)] mb-20">
-        <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-          준비중입니다
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
+      <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow-lg p-8 max-w-md text-center">
+        <h1 className="text-4xl font-bold text-white mb-4">공사중!</h1>
+        <p className="text-lg text-white mb-6">
+          
+        </p>
+        <div className="flex justify-center">
+          <img
+            src="/under_construction.png"
+            alt="Under Construction"
+            className="w-64 h-64 opacity-100"
+          />
         </div>
+        <p className="text-sm text-white mt-4">
+          
+        </p>
       </div>
-
-      <BottomNav />
     </div>
   );
-} 
+};
+
+export default ChatPage; 

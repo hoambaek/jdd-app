@@ -40,7 +40,7 @@ export const BadgeQRCode: React.FC<BadgeQRCodeProps> = ({ url }) => {
       const pngUrl = canvas.toDataURL('image/png');
       const downloadLink = document.createElement('a');
       downloadLink.href = pngUrl;
-      downloadLink.download = 'qrcode.png';
+      downloadLink.download = `${title}.png`; // 파일명을 배지의 제목으로 설정
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
