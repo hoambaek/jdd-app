@@ -227,6 +227,30 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteQRCode = async (badge: Badge) => {
+    try {
+      const { data: updatedBadge, error: updateError } = await supabase
+        .from('badges')
+        .update({ qr_code_url: null })
+        .eq('id', badge.id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      setBadges(prevBadges =>
+        prevBadges.map(b =>
+          b.id === badge.id ? { ...b, qr_code_url: null } : b
+        )
+      );
+
+      alert('QR 코드가 성공적으로 삭제되었습니다!');
+    } catch (error: any) {
+      console.error('Error:', error);
+      alert(error.message || 'QR 코드 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -280,6 +304,12 @@ export default function AdminPage() {
                     {badge.qr_code_url && (
                       <div className="mt-2">
                         <BadgeQRCode url={badge.qr_code_url} />
+                        <button
+                          onClick={() => handleDeleteQRCode(badge)}
+                          className="flex items-center gap-1 px-2 py-1 bg-red-600 rounded hover:bg-red-700 mt-2"
+                        >
+                          QR코드 삭제
+                        </button>
                       </div>
                     )}
 
