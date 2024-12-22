@@ -49,7 +49,7 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
           .from('badges')
           .getPublicUrl(badge.image_url);
 
-        console.log('Generated Image URL:', imageUrl.data.publicUrl); // 이미지 URL 콘솔 출력
+        console.log('Generated Image URL:', imageUrl.data.publicUrl);
 
         if (imageUrl.data.publicUrl) {
           setBadgeImage(imageUrl.data.publicUrl);
@@ -70,38 +70,18 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
     }
   }, [params.badgeId, supabase]);
 
-  const activateBadge = async () => {
+  const handleActivateBadge = async () => {
+    const user = supabase.auth.user();
+    if (!user) {
+      alert('로그인이 필요합니다');
+      return;
+    }
+
     try {
-      setIsActivating(true);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('로그인이 필요합니다.');
-      }
-
-      // user_badges 테이블에 데이터 추가
-      const { error: insertError } = await supabase
-        .from('user_badges')
-        .insert([
-          {
-            user_id: session.user.id,
-            badge_id: params.badgeId,
-            collected_at: new Date().toISOString()
-          }
-        ]);
-
-      if (insertError) throw insertError;
-
-      setIsAlreadyCollected(true);
-      alert('배지가 성공적으로 활성화되었습니다!');
-      router.push('/badges'); // 배지 컬렉션 페이지로 이동
-
-    } catch (err: any) {
-      console.error('Error activating badge:', err);
-      alert(err.message || '배지 활성화 중 오류가 발생했습니다.');
-    } finally {
-      setIsActivating(false);
+      // 배지 활성화 로직 추가
+      console.log('배지 활성화 중...');
+    } catch (error) {
+      console.error('배지 활성화 중 오류 발생:', error);
     }
   };
 
@@ -150,7 +130,7 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
             </div>
             {!isAlreadyCollected ? (
               <button
-                onClick={activateBadge}
+                onClick={handleActivateBadge}
                 disabled={isActivating}
                 className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >

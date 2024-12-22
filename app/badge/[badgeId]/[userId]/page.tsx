@@ -74,110 +74,116 @@ export default function BadgeCollect({
   }, [badgeId, supabase]);
 
   useEffect(() => {
+    const collectBadge = async () => {
+      try {
+        const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError) {
+          console.error('인증 오류:', authError);
+          setMessage('로그인 상태를 확인하는 중 오류가 발생했습니다.');
+          return;
+        }
+
+        if (!currentUser) {
+          setMessage('로그인이 필요합니다.');
+          setTimeout(() => router.push('/login'), 2000);
+          return;
+        }
+
+        if (currentUser.id !== userId) {
+          setMessage('본인의 배지 URL만 사용할 수 있습니다.');
+          setTimeout(() => router.push('/badges'), 2000);
+          return;
+        }
+
+        const { data: badges, error: badgeError } = await supabase
+          .from('badges')
+          .select('*')
+          .eq('id', badgeId)
+          .limit(1);
+
+        if (badgeError) {
+          console.error('배지 조회 오류:', badgeError);
+          throw badgeError;
+        }
+
+        if (!badges || badges.length === 0) {
+          setMessage('존재하지 않는 배지입니다.');
+          setTimeout(() => router.push('/badges'), 2000);
+          return;
+        }
+
+        const badge = badges[0];
+        const imageUrl = supabase
+          .storage
+          .from('badges')
+          .getPublicUrl(`badges/${badge.image_url}`);
+
+        setBadgeImage(imageUrl.data.publicUrl);
+
+        const { data: users, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .limit(1);
+
+        if (userError) {
+          console.error('사용자 조회 오류:', userError);
+          throw userError;
+        }
+
+        if (!users || users.length === 0) {
+          setMessage('존재하지 않는 사용자입니다.');
+          setTimeout(() => router.push('/badges'), 2000);
+          return;
+        }
+
+        const user = users[0];
+
+        const { data: existingBadges, error: existingError } = await supabase
+          .from('user_badges')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('badge_id', badgeId)
+          .limit(1);
+
+        if (existingError) {
+          console.error('기존 배지 조회 오류:', existingError);
+          throw existingError;
+        }
+
+        if (existingBadges && existingBadges.length > 0) {
+          setMessage('이미 획득한 배지입니다!');
+          setTimeout(() => router.push('/badges'), 2000);
+          return;
+        }
+
+        const { error: insertError } = await supabase
+          .from('user_badges')
+          .insert([
+            {
+              user_id: userId,
+              badge_id: badgeId,
+              collected_at: new Date().toISOString(),
+            }
+          ]);
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        setMessage('🎉 새로운 배지를 획득했습니다!');
+        setTimeout(() => router.push('/badges'), 2000);
+
+      } catch (error) {
+        console.error('Error:', error);
+        setMessage('배지 획득 중 오류가 발생했습니다.');
+        setTimeout(() => router.push('/badges'), 2000);
+      }
+    };
+
     collectBadge();
   }, []);
-
-  const collectBadge = async () => {
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      
-      if (!currentUser) {
-        setMessage('로그인이 필요합니다.');
-        setTimeout(() => router.push('/login'), 2000);
-        return;
-      }
-
-      if (currentUser.id !== userId) {
-        setMessage('본인의 배지 URL만 사용할 수 있습니다.');
-        setTimeout(() => router.push('/badges'), 2000);
-        return;
-      }
-
-      const { data: badges, error: badgeError } = await supabase
-        .from('badges')
-        .select('*')
-        .eq('id', badgeId)
-        .limit(1);
-
-      if (badgeError) {
-        console.error('배지 조회 오류:', badgeError);
-        throw badgeError;
-      }
-
-      if (!badges || badges.length === 0) {
-        setMessage('존재하지 않는 배지입니다.');
-        setTimeout(() => router.push('/badges'), 2000);
-        return;
-      }
-
-      const badge = badges[0];
-      const imageUrl = supabase
-        .storage
-        .from('badges')
-        .getPublicUrl(`badges/${badge.image_url}`);
-
-      setBadgeImage(imageUrl.data.publicUrl);
-
-      const { data: users, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .limit(1);
-
-      if (userError) {
-        console.error('사용자 조회 오류:', userError);
-        throw userError;
-      }
-
-      if (!users || users.length === 0) {
-        setMessage('존재하지 않는 사용자입니다.');
-        setTimeout(() => router.push('/badges'), 2000);
-        return;
-      }
-
-      const user = users[0];
-
-      const { data: existingBadges, error: existingError } = await supabase
-        .from('user_badges')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('badge_id', badgeId)
-        .limit(1);
-
-      if (existingError) {
-        console.error('기존 배지 조회 오류:', existingError);
-        throw existingError;
-      }
-
-      if (existingBadges && existingBadges.length > 0) {
-        setMessage('이미 획득한 배지입니다!');
-        setTimeout(() => router.push('/badges'), 2000);
-        return;
-      }
-
-      const { error: insertError } = await supabase
-        .from('user_badges')
-        .insert([
-          {
-            user_id: userId,
-            badge_id: badgeId,
-            collected_at: new Date().toISOString(),
-          }
-        ]);
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      setMessage('🎉 새로운 배지를 획득했습니다!');
-      setTimeout(() => router.push('/badges'), 2000);
-
-    } catch (error) {
-      console.error('Error:', error);
-      setMessage('배지 획득 중 오류가 발생했습니다.');
-      setTimeout(() => router.push('/badges'), 2000);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
