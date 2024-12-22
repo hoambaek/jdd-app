@@ -62,6 +62,7 @@ export default function Home() {
           alt="Logo"
           width={250}
           height={146}
+          priority
         />
         <h1 className="text-xl mt-4 fade-in">
         장덕독성당 중고등부 앱

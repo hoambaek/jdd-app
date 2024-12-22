@@ -17,10 +17,12 @@ const LoginPage = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem('rememberedEmail');
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem('rememberedEmail');
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
     }
   }, []);
 
@@ -45,7 +47,7 @@ const LoginPage = () => {
       setTimeout(() => {
         setShake(false);
         setErrorMessage('');
-      }, 5000); // 5초 후에 오류 메시지 제거
+      }, 5000);
     } else {
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
@@ -69,8 +71,6 @@ const LoginPage = () => {
         loop
         muted
         playsInline
-        webkit-playsinline
-        preload="auto"
         className="absolute w-full h-full object-cover"
       >
         <source src="bg.mp4" type="video/mp4" />
