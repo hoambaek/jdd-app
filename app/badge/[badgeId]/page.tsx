@@ -35,6 +35,13 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
           .eq('id', params.badgeId)
           .limit(1);
 
+        // 배지 데이터 로깅
+        console.log('배지 데이터:', badges?.[0]);
+        
+        // 최종 이미지 URL 로깅
+        const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/badges/${badges?.[0]?.image_url}`;
+        console.log('이미지 URL:', imageUrl);
+
         if (error) {
           setError(error.message);
           return;
@@ -50,17 +57,16 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
         const badge = badges[0];
         setBadge(badge);
 
-        const { data: imageData } = supabase
-          .storage
-          .from('badges')
-          .getPublicUrl(badge.image_url);
-
-        if (imageData?.publicUrl) {
-          setBadgeImage(imageData.publicUrl);
-        } else {
-          console.error('이미지 URL을 가져올 수 없음');
+        const img = new Image();
+        img.onload = () => {
+          setBadgeImage(imageUrl);
+        };
+        img.onerror = () => {
+          console.error('이미지를 불러올 수 없음');
           setBadgeImage(null);
-        }
+        };
+        img.src = imageUrl;
+
       } catch (error) {
         console.error('배지 정보를 가져오는 중 오류 발생:', error);
         setError('배지 정보를 불러오는 중 오류가 발생했습니다.');
@@ -76,22 +82,45 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
   }, [params.badgeId]);
 
   const handleActivateBadge = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      alert('로그인이 필요합니다');
-      return;
-    }
-
     try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error('인증 확인 오류:', authError);
+        return;
+      }
+      
+      if (!user) {
+        alert('로그인이 필요합니다');
+        router.push('/login');
+        return;
+      }
+
       setIsActivating(true);
       console.log('배지 활성화 시작');
 
-      // 배지 활성화 로직 추가
-      const { error } = await supabase
+      // 이미 수집한 배지인지 확인
+      const { data: existingBadge, error: checkError } = await supabase
+        .from('user_badges')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('badge_id', badge?.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingBadge) {
+        setIsAlreadyCollected(true);
+        return;
+      }
+
+      const { error: insertError } = await supabase
         .from('user_badges')
         .insert({ user_id: user.id, badge_id: badge?.id });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       console.log('배지 활성화 성공');
       setIsAlreadyCollected(true);
