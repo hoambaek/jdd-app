@@ -25,7 +25,7 @@ export default function BadgeCollection() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const monthNames = [
@@ -35,6 +35,9 @@ export default function BadgeCollection() {
   ];
 
   useEffect(() => {
+    const searchParams = useSearchParams();
+    setSearchParams(searchParams);
+
     const badgeId = searchParams.get('badgeId');
     const userIdFromUrl = searchParams.get('userId');
 
