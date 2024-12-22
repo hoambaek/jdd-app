@@ -16,6 +16,53 @@ export default function BadgeCollect({
 }) {
   const router = useRouter();
   const [message, setMessage] = useState('배지 획득 처리 중...');
+  const [badgeImage, setBadgeImage] = useState('');
+  const [badge, setBadge] = useState(null);
+
+  // 기본 이미지 URL을 Supabase Storage의 이미지로 설정
+  const defaultBadgeImage = supabase
+    .storage
+    .from('badges')
+    .getPublicUrl('default-badge.png').data.publicUrl;  // Storage에 업로드한 기본 이미지 파일명
+
+  useEffect(() => {
+    const fetchBadge = async () => {
+      try {
+        const { data: badges, error } = await supabase
+          .from('badges')
+          .select('*')
+          .eq('id', badgeId)
+          .limit(1);
+
+        if (error) throw error;
+        if (!badges || badges.length === 0) {
+          setBadgeImage(defaultBadgeImage); // 기본 이미지로 설정
+          return;
+        }
+
+        const badge = badges[0];
+        
+        const imageUrl = supabase
+          .storage
+          .from('badges')
+          .getPublicUrl(badge.image_url);
+
+        if (imageUrl.data.publicUrl) {
+          setBadgeImage(imageUrl.data.publicUrl);
+          setBadge(badge);
+        } else {
+          setBadgeImage(defaultBadgeImage); // 기본 이미지로 설정
+        }
+      } catch (error) {
+        console.error('배지 정보를 가져오는 중 오류 발생:', error);
+        setBadgeImage(defaultBadgeImage); // 에러 발생 시 기본 이미지로 설정
+      }
+    };
+
+    if (badgeId) {
+      fetchBadge();
+    }
+  }, [badgeId, supabase]);
 
   useEffect(() => {
     collectBadge();
@@ -39,29 +86,69 @@ export default function BadgeCollect({
         return;
       }
 
-      // 3. 이미 획득한 배지인지 확인
-      const { data: existingBadge } = await supabase
-        .from('user_badges')
-        .select()
-        .eq('user_id', userId)
-        .eq('badge_id', badgeId)
-        .single();
+      // 배지 데이터 조회
+      const { data: badges, error: badgeError } = await supabase
+        .from('badges')
+        .select('*')
+        .eq('id', badgeId)
+        .limit(1);
 
-      if (existingBadge) {
-        setMessage('이미 획득한 배지입니다!');
+      if (badgeError) {
+        console.error('배지 조회 오류:', badgeError);
+        throw badgeError;
+      }
+
+      if (!badges || badges.length === 0) {
+        setMessage('존재하지 않는 배지입니다.');
         setTimeout(() => router.push('/badges'), 2000);
         return;
       }
 
-      // 4. 배지 획득 조건 확인 (예: 특정 페이지 방문 횟수, 활동 완료 여부 등)
-      const { data: badge } = await supabase
-        .from('badges')
-        .select('*')
-        .eq('id', badgeId)
-        .single();
+      const badge = badges[0];
 
-      if (!badge) {
-        setMessage('존재하지 않는 배지입니다.');
+      // Supabase Storage에서 이미지 URL 가져오기 수정
+      const imageUrl = supabase
+        .storage
+        .from('badges')
+        .getPublicUrl(`badges/${badge.image_url}`);  // 경로 수정
+
+      setBadgeImage(imageUrl.data.publicUrl);
+
+      // 사용자 데이터 조회
+      const { data: users, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .limit(1);
+
+      if (userError) {
+        console.error('사용자 조회 오류:', userError);
+        throw userError;
+      }
+
+      if (!users || users.length === 0) {
+        setMessage('존재하지 않는 사용자입니다.');
+        setTimeout(() => router.push('/badges'), 2000);
+        return;
+      }
+
+      const user = users[0];
+
+      // 이미 획득한 배지인지 확인
+      const { data: existingBadges, error: existingError } = await supabase
+        .from('user_badges')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('badge_id', badgeId)
+        .limit(1);
+
+      if (existingError) {
+        console.error('기존 배지 조회 오류:', existingError);
+        throw existingError;
+      }
+
+      if (existingBadges && existingBadges.length > 0) {
+        setMessage('이미 획득한 배지입니다!');
         setTimeout(() => router.push('/badges'), 2000);
         return;
       }
@@ -94,6 +181,15 @@ export default function BadgeCollect({
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="text-center">
+        {badgeImage && (
+          <div className="mb-6">
+            <img 
+              src={badgeImage} 
+              alt="배지 이미지" 
+              className="w-32 h-32 mx-auto"
+            />
+          </div>
+        )}
         <div className="mb-4 text-2xl">{message}</div>
         <div className="text-gray-400">잠시 후 배지 페이지로 이동합니다...</div>
       </div>

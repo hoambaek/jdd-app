@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { BadgeQRCode } from '@/components/qrcode';
+import QRCode from '@/components/qrcode';
 import { createBadgeLink } from '@/utils/badge';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
@@ -33,6 +33,24 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+const BadgeImage = ({ src, alt }: { src: string; alt: string }) => (
+  <img
+    src={src}
+    alt={alt}
+    style={{
+      filter: 'grayscale(100%)', // 모노톤으로 변환
+      opacity: 0.4, // 투명도 40%
+    }}
+  />
+);
+
+const BadgeDisplay = ({ isAdmin }: { isAdmin: boolean }) => {
+  const badgeSrc = isAdmin ? 'admin-badge.png' : 'user-badge.png'; // 예시 이미지 경로
+  const badgeAlt = isAdmin ? 'Admin Badge' : 'User Badge';
+
+  return <BadgeImage src={badgeSrc} alt={badgeAlt} />;
+};
+
 export default function AdminPage() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,11 +80,11 @@ export default function AdminPage() {
         .from('profiles')
         .select('role')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
 
-      if (profile?.role === 'admin') {
+      if (profile && profile.role === 'admin') {
         setIsAdmin(true);
         setError(null);
       } else {
@@ -123,16 +141,18 @@ export default function AdminPage() {
       const url = await createBadgeLink(badge.id);
       if (!url) throw new Error('링크 생성에 실패했습니다.');
 
-      const { data: updatedBadge, error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('badges')
         .update({ qr_code_url: url })
         .eq('id', badge.id)
-        .select()
-        .single();
+        .select();
 
       if (updateError) throw updateError;
+      
+      if (!data || data.length === 0) {
+        throw new Error('배지 업데이트 실패');
+      }
 
-      // 타입 단언 추가
       setBadges(prevBadges => 
         prevBadges.map(b => 
           b.id === badge.id ? { ...b, qr_code_url: url } as Badge : b
@@ -140,7 +160,6 @@ export default function AdminPage() {
       );
 
       alert('QR 코드가 성공적으로 생성되었습니다!');
-
     } catch (error: any) {
       console.error('Error:', error);
       alert(error.message || 'QR 코드 생성 중 오류가 발생했습니다.');
@@ -154,6 +173,25 @@ export default function AdminPage() {
         throw new Error('모든 필드를 입력해주세요.');
       }
 
+      // Supabase Storage에 이미지 업로드 후 URL 가져오기
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('your-bucket-name') // 버킷 이름을 적절히 변경하세요
+        .upload(`public/${formData.name}.png`, formData.image_url);
+
+      if (uploadError) {
+        throw new Error(`이미지 업로드 실패: ${uploadError.message}`);
+      }
+
+      const imageUrl = supabase
+        .storage
+        .from('your-bucket-name')
+        .getPublicUrl(`public/${formData.name}.png`).publicURL;
+
+      if (!imageUrl) {
+        throw new Error('이미지 URL 생성 실패');
+      }
+
       const currentMonth = new Date().getMonth() + 1;
       const maxPosition = badges.length > 0 
         ? Math.max(...badges.map(b => b.position || 0))
@@ -162,7 +200,7 @@ export default function AdminPage() {
       const newBadgeData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
-        image_url: formData.image_url.trim(),
+        image_url: imageUrl, // 올바른 이미지 URL 설정
         month: currentMonth,
         position: maxPosition + 1,
         created_at: new Date().toISOString()
@@ -170,24 +208,24 @@ export default function AdminPage() {
 
       console.log('Creating badge with data:', newBadgeData);
 
-      const { data: newBadge, error } = await supabase
+      const { data, error } = await supabase
         .from('badges')
         .insert([newBadgeData])
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) {
         console.error('Supabase error:', error);
         throw new Error(`배지 생성 실패: ${error.message}`);
       }
 
-      if (!newBadge) {
+      if (!data || data.length === 0) {
         throw new Error('배지 데이터 생성 실패');
       }
 
+      const newBadge = data[0];
       console.log('Successfully created badge:', newBadge);
 
-      // 상로운 배지 데이터로 상태 업데이트
+      // 새로운 배지 데이터로 상태 업데이트
       setBadges(prevBadges => [newBadge, ...prevBadges]);
       
       // 폼 초기화
@@ -229,14 +267,17 @@ export default function AdminPage() {
 
   const handleDeleteQRCode = async (badge: Badge) => {
     try {
-      const { data: updatedBadge, error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('badges')
         .update({ qr_code_url: null })
         .eq('id', badge.id)
-        .select()
-        .single();
+        .select();
 
       if (updateError) throw updateError;
+
+      if (!data || data.length === 0) {
+        throw new Error('QR 코드 삭제 실패');
+      }
 
       setBadges(prevBadges =>
         prevBadges.map(b =>
@@ -303,7 +344,7 @@ export default function AdminPage() {
 
                     {badge.qr_code_url && (
                       <div className="mt-2">
-                        <BadgeQRCode url={badge.qr_code_url} />
+                        <QRCode url={badge.qr_code_url} />
                         <button
                           onClick={() => handleDeleteQRCode(badge)}
                           className="flex items-center gap-1 px-2 py-1 bg-red-600 rounded hover:bg-red-700 mt-2"

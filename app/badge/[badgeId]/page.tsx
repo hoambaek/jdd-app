@@ -1,14 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClientComponentClient();
 
 interface Badge {
   id: number;
@@ -16,6 +13,8 @@ interface Badge {
   description: string;
   image_url: string;
   month: number;
+  image_name: string;
+  image_path: string;
 }
 
 export default function BadgePage({ params }: { params: { badgeId: string } }) {
@@ -25,59 +24,48 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [isActivating, setIsActivating] = useState(false);
   const [isAlreadyCollected, setIsAlreadyCollected] = useState(false);
+  const [badgeImage, setBadgeImage] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuthAndLoadBadge = async () => {
+    const fetchBadge = async () => {
       try {
-        setLoading(true);
-        
-        // 세션 확인
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (!session) {
-          router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
-          return;
-        }
-
-        // 배지 정보 로드
-        const { data: badge, error: badgeError } = await supabase
+        const { data: badges, error } = await supabase
           .from('badges')
           .select('*')
           .eq('id', params.badgeId)
-          .single();
+          .limit(1);
 
-        if (badgeError) throw badgeError;
-
-        console.log('로드된 배지 정보:', badge);
-
-        if (!badge) {
-          throw new Error('배지를 찾을 수 없습니다.');
+        if (error) throw error;
+        if (!badges || badges.length === 0) {
+          setBadgeImage(null);
+          return;
         }
 
-        setBadge(badge);
+        const badge = badges[0];
+        
+        const imageUrl = supabase
+          .storage
+          .from('badges')
+          .getPublicUrl(badge.image_url);
 
-        // 이미 수집한 배지인지 확인
-        const { data: existingBadge, error: collectionError } = await supabase
-          .from('user_badges')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .eq('badge_id', params.badgeId)
-          .single();
+        console.log('Generated Image URL:', imageUrl.data.publicUrl); // 이미지 URL 콘솔 출력
 
-        if (existingBadge) {
-          setIsAlreadyCollected(true);
+        if (imageUrl.data.publicUrl) {
+          setBadgeImage(imageUrl.data.publicUrl);
+          setBadge(badge);
+        } else {
+          setBadgeImage(null);
         }
-
-      } catch (err: any) {
-        console.error('Error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error('배지 정보를 가져오는 중 오류 발생:', error);
+        setBadgeImage(null);
       }
     };
 
-    checkAuthAndLoadBadge();
-  }, [params.badgeId, router]);
+    if (params.badgeId) {
+      fetchBadge();
+    }
+  }, [params.badgeId, supabase]);
 
   const activateBadge = async () => {
     try {
@@ -134,6 +122,8 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
     );
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
   return (
     <div className="min-h-screen bg-black text-white p-4">
       <div className="max-w-2xl mx-auto">
@@ -141,12 +131,13 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
           <div className="flex flex-col items-center">
             <div className="relative w-48 h-48 mb-4">
               <Image
-                src={badge.image_url}
+                src={badgeImage || `${supabaseUrl}/storage/v1/object/public/badges/${badge.image_path}`}
                 alt={badge.name}
                 fill
                 className={`rounded-full object-cover ${
-                  isAlreadyCollected ? 'opacity-100' : 'opacity-10'
+                  isAlreadyCollected ? 'opacity-100' : 'opacity-50'
                 }`}
+                priority
               />
             </div>
             <h1 className="text-2xl font-bold mb-2">{badge.name}</h1>

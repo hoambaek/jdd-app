@@ -66,10 +66,14 @@ export default function BadgeCollection() {
         return;
       }
 
+      console.log('badgesData:', badgesData);
+
       const formattedBadges = badgesData.map(badge => ({
         ...badge,
         is_collected: badge.user_badges.some(ub => ub?.user_id === user?.id)
       }));
+
+      console.log('formattedBadges:', formattedBadges);
 
       setBadges(formattedBadges);
     } catch (error) {
@@ -111,39 +115,29 @@ export default function BadgeCollection() {
               <div key={month} className="mb-16">
                 <div className="flex items-baseline mb-6">
                   <h2 className="text-2xl font-bold">{month}월</h2>
-                  <span className="ml-2 text-lg text-gray-400">January</span>
+                  <span className="ml-2 text-lg text-gray-400">{monthNames[month-1]}</span>
                 </div>
                 
                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                  {Array(6).fill(null).map((_, position) => {
-                    const badge = badges.find(b => b.month === month && b.position === position + 1);
-                    
-                    return (
+                  {badges
+                    .filter(badge => badge.month === month)
+                    .map((badge) => (
                       <div 
-                        key={`${month}-${position}`}
+                        key={badge.id}
                         className="relative aspect-square"
                       >
                         <Image
-                          src={badge?.image_url || '/badges/placeholder-badge.png'}
-                          alt={badge?.name || '배지'}
+                          src={badge.image_url}
+                          alt={badge.name}
                           fill
                           className={`
                             object-contain p-1
-                            ${badge?.is_collected 
-                              ? 'opacity-100' 
-                              : 'opacity-20 grayscale'
-                            }
+                            ${badge.is_collected ? 'opacity-100' : 'opacity-50 grayscale'}
                           `}
                           loading="lazy"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/badges/placeholder-badge.png';
-                            console.error('이미지 로딩 실패:', badge?.image_url);
-                          }}
                         />
                       </div>
-                    );
-                  })}
+                    ))}
                 </div>
               </div>
             ))}
