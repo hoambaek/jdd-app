@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import QRCode from '@/components/qrcode';
 import { createBadgeLink } from '@/utils/badge';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { supabase } from '../../utils/supabaseClient';
+import { supabase } from '@/utils/supabaseClient';
 
 // 타입 정의
 interface Badge {
