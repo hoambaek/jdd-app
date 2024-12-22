@@ -71,16 +71,16 @@ export default function BadgeCollect({
   const collectBadge = async () => {
     try {
       // 1. 현재 로그인한 사용자 확인
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      if (!user) {
+      if (!currentUser) {
         setMessage('로그인이 필요합니다.');
         setTimeout(() => router.push('/login'), 2000);
         return;
       }
 
       // 2. URL의 사용자 ID와 로그인한 사용자 ID가 일치하는지 확인
-      if (user.id !== userId) {
+      if (currentUser.id !== userId) {
         setMessage('본인의 배지 URL만 사용할 수 있습니다.');
         setTimeout(() => router.push('/badges'), 2000);
         return;
