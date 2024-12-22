@@ -185,6 +185,33 @@ export default function BadgeCollect({
     collectBadge();
   }, []);
 
+  // 배지 활성화하기 버튼 클릭 이벤트 핸들러 추가
+  const handleActivateBadge = async () => {
+    try {
+      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error('인증 오류:', authError);
+        setMessage('로그인 상태를 확인하는 중 오류가 발생했습니다.');
+        return;
+      }
+
+      if (!currentUser) {
+        setMessage('로그인이 필요합니다.');
+        setTimeout(() => router.push('/login'), 2000);
+        return;
+      }
+
+      // 배지 활성화 로직 추가
+      // 예: 서버에 배지 활성화 요청 보내기
+
+      setMessage('배지가 활성화되었습니다!');
+    } catch (error) {
+      console.error('배지 활성화 중 오류 발생:', error);
+      setMessage('배지 활성화 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="text-center">
@@ -202,6 +229,12 @@ export default function BadgeCollect({
               </div>
             )}
             <div className="mb-4 text-2xl">{message}</div>
+            <button 
+              onClick={handleActivateBadge} 
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              배지 활성화하기
+            </button>
             <div className="text-gray-400">잠시 후 배지 페이지로 이동합니다...</div>
           </>
         )}

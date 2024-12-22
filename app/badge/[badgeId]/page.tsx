@@ -44,15 +44,17 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
 
         const badge = badges[0];
         
-        const imageUrl = supabase
+        const { data: imageUrl, error: imageError } = supabase
           .storage
           .from('badges')
           .getPublicUrl(badge.image_url);
 
-        console.log('Generated Image URL:', imageUrl.data.publicUrl);
+        if (imageError) throw imageError;
 
-        if (imageUrl.data.publicUrl) {
-          setBadgeImage(imageUrl.data.publicUrl);
+        console.log('Generated Image URL:', imageUrl.publicUrl);
+
+        if (imageUrl.publicUrl) {
+          setBadgeImage(imageUrl.publicUrl);
           setBadge(badge);
         } else {
           setBadgeImage(null);
@@ -78,10 +80,17 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
     }
 
     try {
+      setIsActivating(true);
       // 배지 활성화 로직 추가
       console.log('배지 활성화 중...');
+      // 예시: 활성화 API 호출
+      // const { error } = await supabase.from('user_badges').insert({ user_id: user.id, badge_id: badge.id });
+      // if (error) throw error;
+      setIsAlreadyCollected(true);
     } catch (error) {
       console.error('배지 활성화 중 오류 발생:', error);
+    } finally {
+      setIsActivating(false);
     }
   };
 
