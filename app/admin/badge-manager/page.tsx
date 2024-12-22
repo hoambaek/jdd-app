@@ -51,6 +51,35 @@ const BadgeDisplay = ({ isAdmin }: { isAdmin: boolean }) => {
   return <BadgeImage src={badgeSrc} alt={badgeAlt} />;
 };
 
+export async function getStaticProps() {
+  try {
+    const { data: badges, error } = await supabase
+      .from('badges')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching badges:', error);
+      throw new Error('Failed to fetch badges');
+    }
+
+    return {
+      props: {
+        badges,
+      },
+      revalidate: 60, // 60초마다 재생성
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    return {
+      props: {
+        badges: [],
+        error: 'Failed to load badges',
+      },
+    };
+  }
+}
+
 export default function AdminPage() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
