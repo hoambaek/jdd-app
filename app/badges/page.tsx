@@ -58,9 +58,13 @@ export default function BadgeCollection() {
   const loadBadges = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('User fetch error:', userError);
+        return;
+      }
 
-      const { data: badgesData, error } = await supabase
+      const { data: badgesData, error: badgesError } = await supabase
         .from('badges')
         .select(`
           *,
@@ -69,19 +73,15 @@ export default function BadgeCollection() {
         .order('month')
         .order('position');
 
-      if (error) {
-        console.error('배지 로딩 에러:', error);
+      if (badgesError) {
+        console.error('배지 로딩 에러:', badgesError);
         return;
       }
-
-      console.log('badgesData:', badgesData);
 
       const formattedBadges = badgesData.map(badge => ({
         ...badge,
         is_collected: badge.user_badges.some((ub: { user_id: string | undefined }) => ub?.user_id === user?.id)
       }));
-
-      console.log('formattedBadges:', formattedBadges);
 
       setBadges(formattedBadges);
     } catch (error) {
