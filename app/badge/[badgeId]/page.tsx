@@ -81,11 +81,14 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
 
     try {
       setIsActivating(true);
+      console.log('배지 활성화 시작');
+
       // 배지 활성화 로직 추가
-      console.log('배지 활성화 중...');
       // 예시: 활성화 API 호출
       // const { error } = await supabase.from('user_badges').insert({ user_id: user.id, badge_id: badge.id });
       // if (error) throw error;
+
+      console.log('배지 활성화 성공');
       setIsAlreadyCollected(true);
     } catch (error) {
       console.error('배지 활성화 중 오류 발생:', error);
@@ -122,34 +125,24 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
         <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
           <div className="flex flex-col items-center">
             <div className="relative w-48 h-48 mb-4">
-              <Image
-                src={badgeImage || `${supabaseUrl}/storage/v1/object/public/badges/${badge.image_path}`}
-                alt={badge.name}
-                fill
-                className={`rounded-full object-cover ${
-                  isAlreadyCollected ? 'opacity-100' : 'opacity-50'
-                }`}
-                priority
-              />
+              {badgeImage ? (
+                <img src={badgeImage} alt="배지 이미지" />
+              ) : (
+                <p>이미지를 불러올 수 없습니다.</p>
+              )}
             </div>
             <h1 className="text-2xl font-bold mb-2">{badge.name}</h1>
             <p className="text-gray-300 text-center mb-4">{badge.description}</p>
             <div className="text-sm text-gray-400 mb-4">
               {badge.month}월의 배지
             </div>
-            {!isAlreadyCollected ? (
-              <button
-                onClick={handleActivateBadge}
-                disabled={isActivating}
-                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-              >
-                {isActivating ? '활성화 중...' : '배지 활성화하기'}
-              </button>
-            ) : (
-              <div className="text-green-500 font-semibold">
-                이미 수집한 배지입니다
-              </div>
-            )}
+            <button
+              onClick={handleActivateBadge}
+              disabled={isActivating || isAlreadyCollected}
+              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {isAlreadyCollected ? '이미 활성화됨' : '배지 활성화하기'}
+            </button>
           </div>
         </div>
       </div>
