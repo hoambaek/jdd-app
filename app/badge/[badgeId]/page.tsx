@@ -35,27 +35,37 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
           .eq('id', params.badgeId)
           .limit(1);
 
-        if (error) throw error;
+        if (error) {
+          setError(error.message);
+          return;
+        }
+        
         if (!badges || badges.length === 0) {
+          setError('배지를 찾을 수 없습니다.');
           setBadgeImage(null);
           setLoading(false);
           return;
         }
 
         const badge = badges[0];
+        setBadge(badge);
 
         const { data: imageBlob, error: imageError } = await supabase
           .storage
           .from('badges')
           .download(badge.image_url);
 
-        if (imageError) throw imageError;
+        if (imageError) {
+          console.error('이미지 다운로드 오류:', imageError);
+          setBadgeImage(null);
+          return;
+        }
 
         const imageUrl = URL.createObjectURL(imageBlob);
         setBadgeImage(imageUrl);
-        setBadge(badge);
       } catch (error) {
         console.error('배지 정보를 가져오는 중 오류 발생:', error);
+        setError('배지 정보를 불러오는 중 오류가 발생했습니다.');
         setBadgeImage(null);
       } finally {
         setLoading(false);
@@ -65,7 +75,7 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
     if (params.badgeId) {
       fetchBadge();
     }
-  }, [params.badgeId, supabase]);
+  }, [params.badgeId]);
 
   const handleActivateBadge = async () => {
     const user = supabase.auth.user();

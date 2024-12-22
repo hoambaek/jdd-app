@@ -30,7 +30,7 @@ export default function BadgeCollect({
     const fetchBadge = async () => {
       console.log('fetchBadge 시작');
       try {
-        setIsLoading(true);  // 로딩 시작
+        setIsLoading(true);
         const { data: badges, error } = await supabase
           .from('badges')
           .select('*')
@@ -47,17 +47,19 @@ export default function BadgeCollect({
         }
 
         const badge = badges[0];
-        const imageUrl = supabase
+        setBadge(badge);
+
+        const { data: imageData } = supabase
           .storage
           .from('badges')
           .getPublicUrl(badge.image_url);
 
-        console.log('이미지 URL:', imageUrl);
+        console.log('이미지 URL:', imageData);
 
-        if (imageUrl.data.publicUrl) {
-          setBadgeImage(imageUrl.data.publicUrl);
-          setBadge(badge);
+        if (imageData?.publicUrl) {
+          setBadgeImage(imageData.publicUrl);
         } else {
+          console.log('이미지 URL을 가져올 수 없음, 기본 이미지 사용');
           setBadgeImage(defaultBadgeImage);
         }
       } catch (error) {
@@ -65,7 +67,7 @@ export default function BadgeCollect({
         setBadgeImage(defaultBadgeImage);
         setMessage('배지를 찾을 수 없습니다.');
       } finally {
-        setIsLoading(false);  // 로딩 종료
+        setIsLoading(false);
         console.log('fetchBadge 종료');
       }
     };
@@ -73,7 +75,7 @@ export default function BadgeCollect({
     if (badgeId) {
       fetchBadge();
     }
-  }, [badgeId, supabase]);
+  }, [badgeId]);
 
   useEffect(() => {
     const collectBadge = async () => {
@@ -119,7 +121,7 @@ export default function BadgeCollect({
         const imageUrl = supabase
           .storage
           .from('badges')
-          .getPublicUrl(`badges/${badge.image_url}`);
+          .getPublicUrl(badge.image_url);
 
         setBadgeImage(imageUrl.data.publicUrl);
 
