@@ -42,6 +42,7 @@ export default function BadgeCollect({
         if (error) throw error;
         if (!badges || badges.length === 0) {
           setBadgeImage(defaultBadgeImage);
+          setMessage('배지를 찾을 수 없습니다.');
           return;
         }
 
@@ -62,6 +63,7 @@ export default function BadgeCollect({
       } catch (error) {
         console.error('배지 정보를 가져오는 중 오류 발생:', error);
         setBadgeImage(defaultBadgeImage);
+        setMessage('배지를 찾을 수 없습니다.');
       } finally {
         setIsLoading(false);  // 로딩 종료
         console.log('fetchBadge 종료');
