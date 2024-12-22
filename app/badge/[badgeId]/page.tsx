@@ -50,19 +50,17 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
         const badge = badges[0];
         setBadge(badge);
 
-        const { data: imageBlob, error: imageError } = await supabase
+        const { data: imageData } = supabase
           .storage
           .from('badges')
-          .download(badge.image_url);
+          .getPublicUrl(badge.image_url);
 
-        if (imageError) {
-          console.error('이미지 다운로드 오류:', imageError);
+        if (imageData?.publicUrl) {
+          setBadgeImage(imageData.publicUrl);
+        } else {
+          console.error('이미지 URL을 가져올 수 없음');
           setBadgeImage(null);
-          return;
         }
-
-        const imageUrl = URL.createObjectURL(imageBlob);
-        setBadgeImage(imageUrl);
       } catch (error) {
         console.error('배지 정보를 가져오는 중 오류 발생:', error);
         setError('배지 정보를 불러오는 중 오류가 발생했습니다.');
@@ -78,7 +76,7 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
   }, [params.badgeId]);
 
   const handleActivateBadge = async () => {
-    const user = supabase.auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       alert('로그인이 필요합니다');
       return;
@@ -133,7 +131,12 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
           <div className="flex flex-col items-center">
             <div className="relative w-48 h-48 mb-4">
               {badgeImage ? (
-                <img src={badgeImage} alt="배지 이미지" />
+                <Image 
+                  src={badgeImage}
+                  alt="배지 이미지"
+                  fill
+                  style={{ objectFit: 'contain' }}
+                />
               ) : (
                 <p>이미지를 불러올 수 없습니다.</p>
               )}
