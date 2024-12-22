@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient'; // Supabase 클라이언트 가져오기
 
