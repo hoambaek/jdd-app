@@ -138,9 +138,11 @@ export default function AdminPage() {
 
   const handleGenerateLink = async (badge: Badge) => {
     try {
-        const userId = supabase.auth.user()?.id; // 현재 로그인한 사용자 ID 가져오기
-        if (!userId) throw new Error('로그인이 필요합니다.');
+        const { data: { user }, error: userError } = await supabase.auth.getUser(); // 현재 로그인한 사용자 정보 가져오기
+        if (userError) throw userError;
+        if (!user) throw new Error('로그인이 필요합니다.');
 
+        const userId = user.id; // 사용자 ID 가져오기
         const url = `https://ourjdd.com/badges/collect?badgeId=${badge.id}&userId=${userId}`; // 사용자 ID 포함
         const { data, error: updateError } = await supabase
             .from('badges')

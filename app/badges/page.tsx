@@ -25,7 +25,7 @@ export default function BadgeCollection() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
-  const [searchParams, setSearchParams] = useState(null);
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
 
   const monthNames = [
@@ -35,9 +35,6 @@ export default function BadgeCollection() {
   ];
 
   useEffect(() => {
-    const searchParams = useSearchParams();
-    setSearchParams(searchParams);
-
     const badgeId = searchParams.get('badgeId');
     const userIdFromUrl = searchParams.get('userId');
 
@@ -47,7 +44,7 @@ export default function BadgeCollection() {
       checkUser();
       loadBadges();
     }
-  }, []);
+  }, [searchParams]);
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
