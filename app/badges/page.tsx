@@ -1,5 +1,6 @@
 import React from 'react';
 import './BadgesPage.css';
+import BottomNav from '../components/BottomNav';
 
 const BadgesPage = ({ badges = [] }) => {
   const months = [
@@ -7,7 +8,7 @@ const BadgesPage = ({ badges = [] }) => {
     "July", "August", "September", "October", "November", "December"
   ];
 
-  const groupedBadges = badges.reduce((acc, badge) => {
+  const groupedBadges = badges.reduce((acc: { [key: number]: any[] }, badge: { created_at: string, image_url: string, name: string }) => {
     const month = new Date(badge.created_at).getMonth();
     if (!acc[month]) acc[month] = [];
     acc[month].push(badge);
@@ -34,6 +35,7 @@ const BadgesPage = ({ badges = [] }) => {
           </div>
         </div>
       ))}
+      <BottomNav />
     </div>
   );
 };

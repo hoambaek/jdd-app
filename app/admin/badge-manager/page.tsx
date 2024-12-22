@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import QRCode from 'react-qr-code';
 import { toCanvas } from 'qrcode';
+import BottomNav from '../../components/BottomNav';
 
 function BadgeManager() {
     const [badges, setBadges] = useState<any[]>([]);
@@ -346,6 +347,7 @@ function BadgeManager() {
                     </div>
                 </div>
             ))}
+            <BottomNav />
         </div>
     );
 }
