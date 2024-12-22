@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -112,65 +112,67 @@ export default function BadgeCollection() {
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 py-8 pb-24">
-      {loading ? (
-        <div className="container mx-auto max-w-6xl">
-          <div className="animate-pulse">
-            {[1, 2, 3].map(month => (
-              <div key={month} className="mb-16">
-                <div className="h-8 bg-gray-700 rounded w-32 mb-6"></div>
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-6">
-                  {Array(8).fill(0).map((_, i) => (
-                    <div key={i} className="aspect-square rounded-full bg-gray-700"></div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <>
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="min-h-screen bg-black text-white px-4 py-8 pb-24">
+        {loading ? (
           <div className="container mx-auto max-w-6xl">
-            <h1 className="text-3xl font-bold mb-2">나의 배지 현황</h1>
-            <p className="text-gray-400 mb-12">
-              매월 출석체크와 다양한 활동에 참여하여<br />
-              특별한 배지를 수집해보세요! 😘
-            </p>
-            
-            {months.map(month => (
-              <div key={month} className="mb-16">
-                <div className="flex items-baseline mb-6">
-                  <h2 className="text-2xl font-bold">{month}월</h2>
-                  <span className="ml-2 text-lg text-gray-400">{monthNames[month-1]}</span>
-                </div>
-                
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                  {badges
-                    .filter(badge => badge.month === month)
-                    .map((badge) => (
-                      <div 
-                        key={badge.id}
-                        className="relative aspect-square"
-                      >
-                        <Image
-                          src={badge.image_url}
-                          alt={badge.name}
-                          fill
-                          className={`
-                            object-contain p-1
-                            ${badge.is_collected ? 'opacity-100' : 'opacity-50 grayscale'}
-                          `}
-                          loading="lazy"
-                        />
-                      </div>
+            <div className="animate-pulse">
+              {[1, 2, 3].map(month => (
+                <div key={month} className="mb-16">
+                  <div className="h-8 bg-gray-700 rounded w-32 mb-6"></div>
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-6">
+                    {Array(8).fill(0).map((_, i) => (
+                      <div key={i} className="aspect-square rounded-full bg-gray-700"></div>
                     ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <BottomNav />
-        </>
-      )}
-    </div>
+        ) : (
+          <>
+            <div className="container mx-auto max-w-6xl">
+              <h1 className="text-3xl font-bold mb-2">나의 배지 현황</h1>
+              <p className="text-gray-400 mb-12">
+                매월 출석체크와 다양한 활동에 참여하여<br />
+                특별한 배지를 수집해보세요! 😘
+              </p>
+              
+              {months.map(month => (
+                <div key={month} className="mb-16">
+                  <div className="flex items-baseline mb-6">
+                    <h2 className="text-2xl font-bold">{month}월</h2>
+                    <span className="ml-2 text-lg text-gray-400">{monthNames[month-1]}</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                    {badges
+                      .filter(badge => badge.month === month)
+                      .map((badge) => (
+                        <div 
+                          key={badge.id}
+                          className="relative aspect-square"
+                        >
+                          <Image
+                            src={badge.image_url}
+                            alt={badge.name}
+                            fill
+                            className={`
+                              object-contain p-1
+                              ${badge.is_collected ? 'opacity-100' : 'opacity-50 grayscale'}
+                            `}
+                            loading="lazy"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <BottomNav />
+          </>
+        )}
+      </div>
+    </Suspense>
   );
 } 
