@@ -101,28 +101,7 @@ function BadgeManager() {
     };
 
     const claimBadge = async (badgeId: string) => {
-        const userId = getUserIdentifier(); // 사용자 ID 가져오기
-    
-        try {
-            const response = await fetch(`/api/badges/claim/${badgeId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                console.error('Error claiming badge:', error.message);
-                alert(`Error: ${error.message}`);
-                return;
-            }
-
-            const result = await response.json();
-            alert('Badge claimed successfully!');
-            console.log(result);
-        } catch (error) {
-            console.error('Error during badge claim:', error);
-        }
+        // 이 함수는 더 이상 필요하지 않습니다.
     };
 
     const groupBadgesByMonth = (badges: any[]) => {
@@ -286,21 +265,6 @@ function BadgeManager() {
                                     fontSize: '14px'
                                 }}>
                                     QR생성
-                                </button>
-                                <button 
-                                    onClick={() => claimBadge(badge.id)} 
-                                    style={{ 
-                                        background: 'rgba(40, 167, 69, 0.3)', 
-                                        border: '1px solid rgba(255, 255, 255, 0.3)', 
-                                        padding: '6px 10px', 
-                                        borderRadius: '6px', 
-                                        color: '#fff', 
-                                        cursor: 'pointer', 
-                                        fontSize: '12px',
-                                        marginTop: '8px'
-                                    }}
-                                >
-                                    Claim
                                 </button>
                                 {showQRCode[badge.id] && (
                                     <>
