@@ -43,22 +43,17 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
         }
 
         const badge = badges[0];
-        
-        const { data: imageUrl, error: imageError } = supabase
+
+        const { data: imageBlob, error: imageError } = await supabase
           .storage
           .from('badges')
-          .getPublicUrl(badge.image_url);
+          .download(badge.image_url);
 
         if (imageError) throw imageError;
 
-        console.log('Generated Image URL:', imageUrl.publicUrl);
-
-        if (imageUrl.publicUrl) {
-          setBadgeImage(imageUrl.publicUrl);
-          setBadge(badge);
-        } else {
-          setBadgeImage(null);
-        }
+        const imageUrl = URL.createObjectURL(imageBlob);
+        setBadgeImage(imageUrl);
+        setBadge(badge);
       } catch (error) {
         console.error('배지 정보를 가져오는 중 오류 발생:', error);
         setBadgeImage(null);
@@ -84,9 +79,11 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
       console.log('배지 활성화 시작');
 
       // 배지 활성화 로직 추가
-      // 예시: 활성화 API 호출
-      // const { error } = await supabase.from('user_badges').insert({ user_id: user.id, badge_id: badge.id });
-      // if (error) throw error;
+      const { error } = await supabase
+        .from('user_badges')
+        .insert({ user_id: user.id, badge_id: badge?.id });
+
+      if (error) throw error;
 
       console.log('배지 활성화 성공');
       setIsAlreadyCollected(true);

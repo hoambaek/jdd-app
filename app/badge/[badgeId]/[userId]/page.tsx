@@ -203,7 +203,17 @@ export default function BadgeCollect({
       }
 
       // 배지 활성화 로직 추가
-      // 예: 서버에 배지 활성화 요청 보내기
+      const { error: activateError } = await supabase
+        .from('user_badges')
+        .update({ is_active: true })  // 예시로 is_active 필드를 true로 업데이트
+        .eq('user_id', userId)
+        .eq('badge_id', badgeId);
+
+      if (activateError) {
+        console.error('배지 활성화 오류:', activateError);
+        setMessage('배지 활성화 중 오류가 발생했습니다.');
+        return;
+      }
 
       setMessage('배지가 활성화되었습니다!');
     } catch (error) {
