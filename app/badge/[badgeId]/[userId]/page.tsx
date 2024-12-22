@@ -18,6 +18,7 @@ export default function BadgeCollect({
   const [message, setMessage] = useState('배지 획득 처리 중...');
   const [badgeImage, setBadgeImage] = useState('');
   const [badge, setBadge] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // 기본 이미지 URL을 Supabase Storage의 이미지로 설정
   const defaultBadgeImage = supabase
@@ -28,6 +29,7 @@ export default function BadgeCollect({
   useEffect(() => {
     const fetchBadge = async () => {
       try {
+        setIsLoading(true);  // 로딩 시작
         const { data: badges, error } = await supabase
           .from('badges')
           .select('*')
@@ -36,12 +38,11 @@ export default function BadgeCollect({
 
         if (error) throw error;
         if (!badges || badges.length === 0) {
-          setBadgeImage(defaultBadgeImage); // 기본 이미지로 설정
+          setBadgeImage(defaultBadgeImage);
           return;
         }
 
         const badge = badges[0];
-        
         const imageUrl = supabase
           .storage
           .from('badges')
@@ -51,11 +52,13 @@ export default function BadgeCollect({
           setBadgeImage(imageUrl.data.publicUrl);
           setBadge(badge);
         } else {
-          setBadgeImage(defaultBadgeImage); // 기본 이미지로 설정
+          setBadgeImage(defaultBadgeImage);
         }
       } catch (error) {
         console.error('배지 정보를 가져오는 중 오류 발생:', error);
-        setBadgeImage(defaultBadgeImage); // 에러 발생 시 기본 이미지로 설정
+        setBadgeImage(defaultBadgeImage);
+      } finally {
+        setIsLoading(false);  // 로딩 종료
       }
     };
 
@@ -70,7 +73,6 @@ export default function BadgeCollect({
 
   const collectBadge = async () => {
     try {
-      // 1. 현재 로그인한 사용자 확인
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (!currentUser) {
@@ -79,14 +81,12 @@ export default function BadgeCollect({
         return;
       }
 
-      // 2. URL의 사용자 ID와 로그인한 사용자 ID가 일치하는지 확인
       if (currentUser.id !== userId) {
         setMessage('본인의 배지 URL만 사용할 수 있습니다.');
         setTimeout(() => router.push('/badges'), 2000);
         return;
       }
 
-      // 배지 데이터 조회
       const { data: badges, error: badgeError } = await supabase
         .from('badges')
         .select('*')
@@ -105,16 +105,13 @@ export default function BadgeCollect({
       }
 
       const badge = badges[0];
-
-      // Supabase Storage에서 이미지 URL 가져오기 수정
       const imageUrl = supabase
         .storage
         .from('badges')
-        .getPublicUrl(`badges/${badge.image_url}`);  // 경로 수정
+        .getPublicUrl(`badges/${badge.image_url}`);
 
       setBadgeImage(imageUrl.data.publicUrl);
 
-      // 사용자 데이터 조회
       const { data: users, error: userError } = await supabase
         .from('users')
         .select('*')
@@ -134,7 +131,6 @@ export default function BadgeCollect({
 
       const user = users[0];
 
-      // 이미 획득한 배지인지 확인
       const { data: existingBadges, error: existingError } = await supabase
         .from('user_badges')
         .select('*')
@@ -153,7 +149,6 @@ export default function BadgeCollect({
         return;
       }
 
-      // 5. 배지 획득 처리
       const { error: insertError } = await supabase
         .from('user_badges')
         .insert([
@@ -181,17 +176,23 @@ export default function BadgeCollect({
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="text-center">
-        {badgeImage && (
-          <div className="mb-6">
-            <img 
-              src={badgeImage} 
-              alt="배지 이미지" 
-              className="w-32 h-32 mx-auto"
-            />
-          </div>
+        {isLoading ? (
+          <div className="mb-4 text-2xl">로딩 중...</div>
+        ) : (
+          <>
+            {badgeImage && (
+              <div className="mb-6">
+                <img 
+                  src={badgeImage} 
+                  alt="배지 이미지" 
+                  className="w-32 h-32 mx-auto"
+                />
+              </div>
+            )}
+            <div className="mb-4 text-2xl">{message}</div>
+            <div className="text-gray-400">잠시 후 배지 페이지로 이동합니다...</div>
+          </>
         )}
-        <div className="mb-4 text-2xl">{message}</div>
-        <div className="text-gray-400">잠시 후 배지 페이지로 이동합니다...</div>
       </div>
     </div>
   );
