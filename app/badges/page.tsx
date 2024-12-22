@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import BottomNav from '../components/BottomNav';
 
@@ -25,6 +25,7 @@ export default function BadgeCollection() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
 
   const monthNames = [
@@ -34,8 +35,15 @@ export default function BadgeCollection() {
   ];
 
   useEffect(() => {
-    checkUser();
-    loadBadges();
+    const badgeId = searchParams.get('badgeId');
+    const userIdFromUrl = searchParams.get('userId');
+
+    if (badgeId && userIdFromUrl) {
+      collectBadge(badgeId, userIdFromUrl);
+    } else {
+      checkUser();
+      loadBadges();
+    }
   }, []);
 
   const checkUser = async () => {
@@ -70,7 +78,7 @@ export default function BadgeCollection() {
 
       const formattedBadges = badgesData.map(badge => ({
         ...badge,
-        is_collected: badge.user_badges.some(ub => ub?.user_id === user?.id)
+        is_collected: badge.user_badges.some((ub: { user_id: string | undefined }) => ub?.user_id === user?.id)
       }));
 
       console.log('formattedBadges:', formattedBadges);
@@ -80,6 +88,24 @@ export default function BadgeCollection() {
       console.error('Error loading badges:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const collectBadge = async (badgeId: string, userIdFromUrl: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_badges')
+        .insert([{ user_id: userIdFromUrl, badge_id: badgeId }]);
+
+      if (error) {
+        console.error('배지 획득 에러:', error);
+        return;
+      }
+
+      alert('배지를 성공적으로 획득했습니다!');
+      router.push('/badges');
+    } catch (error) {
+      console.error('Error collecting badge:', error);
     }
   };
 

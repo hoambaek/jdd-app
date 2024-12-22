@@ -138,31 +138,32 @@ export default function AdminPage() {
 
   const handleGenerateLink = async (badge: Badge) => {
     try {
-      const url = await createBadgeLink(badge.id);
-      if (!url) throw new Error('링크 생성에 실패했습니다.');
+        const userId = supabase.auth.user()?.id; // 현재 로그인한 사용자 ID 가져오기
+        if (!userId) throw new Error('로그인이 필요합니다.');
 
-      const { data, error: updateError } = await supabase
-        .from('badges')
-        .update({ qr_code_url: url })
-        .eq('id', badge.id)
-        .select();
+        const url = `https://ourjdd.com/badges/collect?badgeId=${badge.id}&userId=${userId}`; // 사용자 ID 포함
+        const { data, error: updateError } = await supabase
+            .from('badges')
+            .update({ qr_code_url: url })
+            .eq('id', badge.id)
+            .select();
 
-      if (updateError) throw updateError;
-      
-      if (!data || data.length === 0) {
-        throw new Error('배지 업데이트 실패');
-      }
+        if (updateError) throw updateError;
 
-      setBadges(prevBadges => 
-        prevBadges.map(b => 
-          b.id === badge.id ? { ...b, qr_code_url: url } as Badge : b
-        )
-      );
+        if (!data || data.length === 0) {
+            throw new Error('배지 업데이트 실패');
+        }
 
-      alert('QR 코드가 성공적으로 생성되었습니다!');
+        setBadges(prevBadges => 
+            prevBadges.map(b => 
+                b.id === badge.id ? { ...b, qr_code_url: url } as Badge : b
+            )
+        );
+
+        alert('QR 코드가 성공적으로 생성되었습니다!');
     } catch (error: any) {
-      console.error('Error:', error);
-      alert(error.message || 'QR 코드 생성 중 오류가 발생했습니다.');
+        console.error('Error:', error);
+        alert(error.message || 'QR 코드 생성 중 오류가 발생했습니다.');
     }
   };
 
