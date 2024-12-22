@@ -15,6 +15,7 @@ const LoginPage = () => {
   const [shake, setShake] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -32,6 +33,19 @@ const LoginPage = () => {
       videoRef.current.load();
       videoRef.current.preload = "auto";
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('Error fetching user:', error);
+      } else {
+        setUser(data.user);
+      }
+    };
+
+    fetchUser();
   }, []);
 
   const handleLogin = async () => {
