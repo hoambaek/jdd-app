@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 export default function ClaimPage({ params }: { params: { badgeId: string } }) {
     const { badgeId } = params;
     const [badge, setBadge] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchBadge = async () => {
@@ -62,6 +64,7 @@ export default function ClaimPage({ params }: { params: { badgeId: string } }) {
 
             const result = await response.json();
             alert(result.message || '배지를 성공적으로 획득했습니다!');
+            router.push('/badges');
         } catch (error) {
             console.error('Error during badge claim:', error);
             alert('배지 획득 중 오류가 발생했습니다.');

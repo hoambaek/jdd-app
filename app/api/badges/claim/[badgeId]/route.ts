@@ -32,10 +32,10 @@ export async function POST(
 
             if (error) {
                 console.error('Supabase error:', error.message, error.details);
-                return NextResponse.json({ error: 'Failed to claim badge' }, { status: 400 });
+                return NextResponse.json({ error: '이런, 배지를 획득하지 못했어요.' }, { status: 400 });
               }
 
-        return NextResponse.json({ message: 'Badge claimed successfully' });
+        return NextResponse.json({ message: '배지를 획득했어요!' });
     } catch (error) {
         console.error('Error in API route:', error);
         return NextResponse.json(

@@ -11,6 +11,7 @@ interface Badge {
   image_url: string;
   name: string;
   acquired: boolean;
+  badge_id?: string;
 }
 
 // 그룹화된 배지 타입 정의
@@ -35,36 +36,41 @@ const BadgesPage = ({ badges = [] }) => {
   // 상태의 타입을 명시적으로 지정
   const [groupedBadges, setGroupedBadges] = useState<GroupedBadges>({});
 
-  // Supabase에서 배지 데이터 가져오기
-  const fetchBadges = async () => {
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // 사용자 ID 가져오기
+  useEffect(() => {
+    const getUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+    getUserId();
+  }, []);
+
+  // 사용자의 배지 데이터 가져오기
+  const fetchUserBadges = async (userId: string) => {
     const { data, error } = await supabase
-      .from('badges')
-      .select('*');
+      .from('user_badges')
+      .select('*, badges(*)')
+      .eq('user_id', userId);
 
     if (error) {
-      console.error('Error fetching badges:', error);
+      console.error('Error fetching user badges:', error);
       return [];
     }
 
     return data;
   };
 
-  // 컴포넌트가 마운트될 때 배지 데이터 가져오기
   useEffect(() => {
     const loadBadges = async () => {
-      const fetchedBadges = await fetchBadges();
+      if (!userId) return;
+
+      const userBadges = await fetchUserBadges(userId);
+      const grouped = {} as GroupedBadges;
       
-      const grouped = fetchedBadges.reduce((acc: GroupedBadges, badge: Badge) => {
-        const month = new Date(badge.created_at).getMonth();
-        if (!acc[month]) acc[month] = [];
-        acc[month].push(badge);
-        return acc;
-      }, {});
-      
-      // 모든 월에 대해 기본 배지 추가 (1월부터 12월까지)
+      // 모든 월에 대해 기본 배지 추가
       for (let month = 0; month < 12; month++) {
-        if (!grouped[month]) grouped[month] = [];
-        
         const monthStr = String(month + 1).padStart(2, '0');
         const monthNames = [
           'january', 'february', 'march', 'april', 'may', 'june',
@@ -73,29 +79,27 @@ const BadgesPage = ({ badges = [] }) => {
         
         grouped[month] = [];
         for (let i = 1; i <= 6; i++) {
+          const badgeImageUrl = `https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/badges/badges/${monthStr}_${monthNames[month]}/badge_0${i}.png`;
+          
+          // 사용자가 획득한 배지인지 확인
+          const userHasBadge = userBadges.some(
+            ub => ub.badges.image_url === badgeImageUrl
+          );
+
           grouped[month].push({
             created_at: new Date().toISOString(),
-            image_url: `https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/badges/badges/${monthStr}_${monthNames[month]}/badge_0${i}.png`,
+            image_url: badgeImageUrl,
             name: `${month + 1}-${i}`,
-            acquired: false // 기본적으로 획득하지 않은 상태로 설정
+            acquired: userHasBadge
           });
         }
-        
-        // 이미 획득한 배지들의 상태를 업데이트
-        fetchedBadges.forEach(badge => {
-          const month = new Date(badge.created_at).getMonth();
-          const badgeIndex = grouped[month].findIndex(b => b.image_url === badge.image_url);
-          if (badgeIndex !== -1) {
-            grouped[month][badgeIndex].acquired = true;
-          }
-        });
       }
       
       setGroupedBadges(grouped);
     };
 
     loadBadges();
-  }, []);
+  }, [userId]);
 
   return (
     <div className="badges-page">
