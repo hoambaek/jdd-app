@@ -5,13 +5,20 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { createClient } from '@supabase/supabase-js';
 
-// Pretendard 폰트 가져오기
-import "../app/globals.css"; // 이 파일에 @import 추가
+// 환경 변수 가져오기
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function checkUser() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) {
+    console.error(error);
+    return;
+  }
+  console.log('User ID:', user?.id);
+}
 
 export default function Home() {
   const router = useRouter();

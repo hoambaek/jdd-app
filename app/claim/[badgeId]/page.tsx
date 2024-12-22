@@ -25,13 +25,16 @@ export default function ClaimPage({ params }: { params: { badgeId: string } }) {
         };
 
         const fetchUserId = async () => {
-            const { data: user, error } = await supabase.auth.getUser();
-            if (error) {
-                console.error('Error fetching user:', error);
-                setError('사용자 정보를 가져올 수 없습니다.');
-            } else {
-                setUserId(user?.id || null);
-            }
+            const {
+                data: { user },
+                error
+              } = await supabase.auth.getUser();
+              
+              if (!error && user) {
+                setUserId(user.id);
+              } else {
+                setUserId(null);
+              }
         };
 
         fetchBadge();

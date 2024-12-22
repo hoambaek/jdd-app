@@ -1,45 +1,61 @@
 .badges-page {
-  background-color: black;
+  padding: 20px;
+  max-width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
   color: white;
-  text-align: center;
-  padding: 40px;
-  font-family: 'Arial', sans-serif;
-}
-
-h1 {
-  font-size: 2.5em;
-  margin-bottom: 10px;
-  font-weight: bold;
-}
-
-p {
-  font-size: 1.2em;
-  margin-bottom: 30px;
-  color: #ccc;
+  padding-bottom: 100px;
 }
 
 .month-section {
-  margin: 50px 0;
+  margin-bottom: 30px;
 }
 
-h2 {
-  font-size: 1.8em;
-  margin-bottom: 20px;
-  color: #f0f0f0;
+.month-section:last-child {
+  margin-bottom: 100px;
 }
 
-.badges {
+.month-section h1 {
+  color: #ffffff;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.month-section h2 {
+  color: #e0e0e0;
+  font-size: 20px;
+  margin: 15px 0;
+}
+
+.month-section p {
+  color: #cccccc;
+  font-size: 16px;
+}
+
+.badges-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  justify-items: center;
+  padding: 10px;
 }
 
-.badge {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.badge-item {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.badge-item:hover {
+  transform: scale(1.05);
+}
+
+.badge-item.not-acquired {
+  filter: grayscale(100%);
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.badge-item.not-acquired:hover {
+  opacity: 0.7;
 }

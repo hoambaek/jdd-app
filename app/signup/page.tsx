@@ -201,7 +201,7 @@ export default function Signup() {
                 value={formData.grade}
                 onChange={handleChange}
                 className="w-full p-2 mb-4 rounded-full bg-white/10 text-white text-center appearance-none outline-none focus:ring-0"
-                style={{ padding: '0.5rem', lineHeight: '1.5rem' }}
+                style={{ padding: '0.5rem', lineHeight: '1.5rem', width: '187px' }}
               >
                 <option value="">학년 선택</option>
                 <option value="중1">중1</option>

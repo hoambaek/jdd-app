@@ -30,10 +30,10 @@ export async function POST(
             .from('user_badges')
             .insert({ user_id: userId, badge_id: badgeId });
 
-        if (error) {
-            console.error('Supabase error:', error.message, error.details);
-            return NextResponse.json({ error: 'Failed to claim badge' }, { status: 400 });
-        }
+            if (error) {
+                console.error('Supabase error:', error.message, error.details);
+                return NextResponse.json({ error: 'Failed to claim badge' }, { status: 400 });
+              }
 
         return NextResponse.json({ message: 'Badge claimed successfully' });
     } catch (error) {
