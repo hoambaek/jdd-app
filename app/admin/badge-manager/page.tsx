@@ -84,4 +84,32 @@ export default function BadgeManager() {
       ))}
     </div>
   );
+}
+
+export async function getStaticProps() {
+  try {
+    const { data: badges, error } = await supabase
+      .from('badges')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching badges:', error);
+      return { props: { badges: [] } };
+    }
+
+    return {
+      props: {
+        badges,
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    return {
+      props: {
+        badges: [],
+      },
+    };
+  }
 } 
