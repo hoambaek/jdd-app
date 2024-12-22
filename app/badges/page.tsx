@@ -103,9 +103,15 @@ const BadgesPage = ({ badges = [] }) => {
 
   return (
     <div className="badges-page">
-      <h1 style={{ fontSize: '1.5em', fontWeight: 'bold' }}>나의 리워드 현황</h1>
-      <p>매월 출석체크와 다양한 활동에 참여하여<br />
-      특별한 배지를 수집해보세요! 😘</p>
+      <h1 style={{ fontSize: '1.5em', fontWeight: 'bold' }}>나의 배지 현황</h1>
+      <p style={{ 
+       
+        color: '#ededed'
+      }}>
+        매월 출석체크와 다양한 활동에 참여하여<br />
+        특별한 배지를 수집해보세요! 
+      </p>
+      <br />
       
       {months.map((month, index) => (
         <div className="month-section" key={index}>

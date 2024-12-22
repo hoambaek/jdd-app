@@ -9,8 +9,8 @@ import { Navigation } from 'swiper/modules';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import BottomNav from '../components/BottomNav';
 
-// Supabase storage URL 추가
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// Supabase storage URL 설정
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 const ChatPage = () => {
   const [comment, setComment] = useState('');
@@ -33,7 +33,7 @@ const ChatPage = () => {
 
       if (data) {
         console.log('Stories data:', data);
-        console.log('Supabase URL:', SUPABASE_URL);
+        console.log('Supabase URL:', supabaseUrl);
         setStories(data);
       }
     };
@@ -49,37 +49,33 @@ const ChatPage = () => {
     }
   };
 
+  const imageUrl = "https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/stories/story-images/5fff8dff-50d9-465b-a09e-121963955180.jpg"
+  
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">Story</h1>
-      
+    <div className="min-h-screen bg-gray-100 pb-20">
       {stories.map((story) => (
-        <div key={story.id} className="mb-12">
-          <div className="mb-6 flex justify-between items-center">
-            <span className="text-gray-600">
-              {new Date(story.created_at).toLocaleDateString()}
-            </span>
-            <h2 className="text-xl font-semibold">{story.title}</h2>
-          </div>
-
-          <div className="mb-8">
+        <div key={story.id} className="bg-white shadow-lg rounded-lg m-4 p-4">
+          <div className="relative w-full h-96 mb-4">
             <Swiper
               navigation={true}
               modules={[Navigation]}
-              className="rounded-lg overflow-hidden"
+              className="h-full w-full"
             >
               {story.images?.map((image: string, index: number) => {
-                const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/stories/${image}`;
+                const imageUrl = `${supabaseUrl}/storage/v1/object/public/stories/${image}`;
                 console.log('Image URL:', imageUrl);
                 return (
                   <SwiperSlide key={index}>
-                    <div className="relative w-full h-[400px]">
+                    <div className="relative w-full h-full">
                       <Image
                         src={imageUrl}
                         alt={`Story image ${index + 1}`}
                         fill
-                        className="object-cover rounded-lg"
-                        unoptimized
+                        className="object-cover"
+                        onError={(e: any) => {
+                          console.error('Image load error:', e);
+                          e.target.src = '/fallback-image.jpg';
+                        }}
                       />
                     </div>
                   </SwiperSlide>
@@ -87,9 +83,14 @@ const ChatPage = () => {
               })}
             </Swiper>
           </div>
+          <div className="mb-6 flex justify-between items-center">
+            <h2 className="text-xl font-semibold">{story.title}</h2>
+            <span className="text-gray-600">
+              {new Date(story.created_at).toLocaleDateString()}
+            </span>
+          </div>
 
           <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4">댓글</h3>
             <form onSubmit={handleCommentSubmit} className="mb-4">
               <div className="flex gap-2">
                 <input
@@ -118,7 +119,6 @@ const ChatPage = () => {
           </div>
         </div>
       ))}
-
       <BottomNav />
     </div>
   );

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
+import BottomNav from '../../components/BottomNav';
 
 // Supabase 클라이언트 설정
 const supabase = createClient(
@@ -21,11 +22,14 @@ interface StoryPost {
 const AdminPage = () => {
   const [stories, setStories] = useState<StoryPost[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingStory, setEditingStory] = useState<StoryPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // 스토리 목록 불러오기
   const fetchStories = async () => {
     try {
+      console.log('Fetching stories...');
       const { data: storiesData, error: storiesError } = await supabase
         .from('stories')
         .select(`
@@ -33,20 +37,38 @@ const AdminPage = () => {
           title,
           date,
           story_images (
+            id,
             image_url
           )
         `)
         .order('date', { ascending: false });
 
-      if (storiesError) throw storiesError;
+      if (storiesError) {
+        console.error('Stories fetch error:', storiesError);
+        throw storiesError;
+      }
 
-      const formattedStories = storiesData.map(story => ({
-        id: story.id,
-        title: story.title,
-        date: story.date,
-        images: story.story_images.map((img: any) => img.image_url)
+      console.log('Raw stories data:', storiesData);
+
+      const formattedStories = await Promise.all(storiesData.map(async story => {
+        const images = story.story_images?.map((img: any) => {
+          // 이미지 URL이 이미 전체 URL인 경우 그대로 사용
+          if (img.image_url.startsWith('http')) {
+            return img.image_url;
+          }
+          // 상대 경로인 경우 전체 URL 생성
+          return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/stories/${img.image_url}`;
+        }) || [];
+
+        return {
+          id: story.id,
+          title: story.title,
+          date: story.date,
+          images
+        };
       }));
 
+      console.log('Formatted stories:', formattedStories);
       setStories(formattedStories);
     } catch (error) {
       console.error('Error fetching stories:', error);
@@ -67,22 +89,44 @@ const AdminPage = () => {
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `story-images/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        throw new Error('이미지 파일만 업로드 가능합니다.');
+      }
+
+      // 파일 크기 체크 (10MB 제한)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error('파일 크기는 10MB 이하여야 합니다.');
+      }
+
+      // 파일 업로드
+      const { data, error: uploadError } = await supabase.storage
         .from('stories')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
         throw new Error('이미지 업로드 중 오류가 발생했습니다.');
       }
 
-      const { data: { publicUrl } } = supabase.storage
+      // 공개 URL 가져오기
+      const { data: urlData } = await supabase.storage
         .from('stories')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 31536000); // 1년 유효기간
 
-      return publicUrl;
+      if (!urlData?.signedUrl) {
+        throw new Error('이미지 URL을 가져오는데 실패했습니다.');
+      }
+
+      // 서명된 URL에서 쿼리 파라미터 제거
+      const baseUrl = urlData.signedUrl.split('?')[0];
+      return baseUrl;
+
     } catch (error) {
-      console.error('Image upload error:', error);
+      console.error('Image upload error details:', error);
       throw error;
     }
   };
@@ -222,6 +266,196 @@ const AdminPage = () => {
     }
   };
 
+  // 스토리 수정 함수 추가
+  const handleEditStory = async (story: StoryPost) => {
+    setEditingStory(story);
+    setIsEditModalOpen(true);
+  };
+
+  // 수정 모달 컴포넌트 추가
+  const EditStoryModal = () => {
+    const [title, setTitle] = useState(editingStory?.title || '');
+    const [date, setDate] = useState(editingStory?.date || '');
+    const [currentImages, setCurrentImages] = useState<string[]>(editingStory?.images || []);
+    const [newImages, setNewImages] = useState<File[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // 컴포넌트 마운트 시 현재 이미지 설정
+    useEffect(() => {
+      if (editingStory) {
+        setCurrentImages(editingStory.images || []);
+      }
+    }, [editingStory]);
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length + currentImages.length + newImages.length > 5) {
+        alert('이미지는 최대 5개까지만 업로드 가능합니다.');
+        return;
+      }
+      setNewImages(prev => [...prev, ...files]);
+    };
+
+    const handleRemoveCurrentImage = (indexToRemove: number) => {
+      setCurrentImages(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleRemoveNewImage = (indexToRemove: number) => {
+      setNewImages(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleSubmit = async () => {
+      if (!title || !date) {
+        alert('제목과 날짜를 입력해주세요.');
+        return;
+      }
+
+      if (currentImages.length + newImages.length === 0) {
+        alert('최소 1개의 이미지가 필요합니다.');
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        // 1. 스토리 정보 업데이트
+        const { error: storyError } = await supabase
+          .from('stories')
+          .update({ title, date })
+          .eq('id', editingStory?.id);
+
+        if (storyError) {
+          console.error('Story update error:', storyError);
+          throw new Error('스토리 정보 업데이트 실패');
+        }
+
+        // 2. 기존 이미지 모두 삭제
+        const { error: deleteImagesError } = await supabase
+          .from('story_images')
+          .delete()
+          .eq('story_id', editingStory?.id);
+
+        if (deleteImagesError) {
+          console.error('Delete images error:', deleteImagesError);
+          throw new Error('기존 이미지 삭제 실패');
+        }
+
+        // 3. 이미지 URL 배열 준비
+        let allImageUrls = [...currentImages];
+
+        // 4. 새 이미지 업로드
+        if (newImages.length > 0) {
+          for (const image of newImages) {
+            try {
+              console.log('Uploading image:', image.name);
+              const url = await uploadImage(image);
+              console.log('Upload successful, URL:', url);
+              allImageUrls.push(url);
+            } catch (uploadError) {
+              console.error('Individual image upload error:', uploadError);
+              throw new Error(`이미지 "${image.name}" 업로드 실패: ${uploadError.message}`);
+            }
+          }
+        }
+
+        // 5. 모든 이미지 URL DB 저장
+        if (allImageUrls.length > 0) {
+          console.log('Saving image URLs to DB:', allImageUrls);
+          const { error: insertImagesError } = await supabase
+            .from('story_images')
+            .insert(
+              allImageUrls.map(url => ({
+                story_id: editingStory?.id,
+                image_url: url
+              }))
+            );
+
+          if (insertImagesError) {
+            console.error('Insert images error:', insertImagesError);
+            throw new Error('이미지 URL 저장 실패');
+          }
+        }
+
+        await fetchStories();
+        setIsEditModalOpen(false);
+        alert('스토리가 성공적으로 수정되었습니다.');
+      } catch (error) {
+        console.error('Final error details:', error);
+        alert(error instanceof Error ? error.message : '스토리 수정에 실패했습니다.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    return (
+      <Modal>
+        <ModalContent>
+          <h2>스토리 수정</h2>
+          <Input
+            type="text"
+            placeholder="제목"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          
+          <ImageSection>
+            <h3>현재 이미지</h3>
+            <CurrentImages>
+              {currentImages.map((img, index) => (
+                <ImageWrapper key={index}>
+                  <img src={img} alt={`current-${index}`} />
+                  <RemoveButton onClick={() => handleRemoveCurrentImage(index)}>
+                    ✕
+                  </RemoveButton>
+                </ImageWrapper>
+              ))}
+            </CurrentImages>
+
+            
+            <ImageUpload>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+              <small>
+                전체 이미지 {currentImages.length + newImages.length}/5
+              </small>
+            </ImageUpload>
+            
+            {newImages.length > 0 && (
+              <NewImages>
+                {newImages.map((file, index) => (
+                  <ImageWrapper key={index}>
+                    <img src={URL.createObjectURL(file)} alt={`new-${index}`} />
+                    <RemoveButton onClick={() => handleRemoveNewImage(index)}>
+                      ✕
+                    </RemoveButton>
+                  </ImageWrapper>
+                ))}
+              </NewImages>
+            )}
+          </ImageSection>
+
+          <ButtonGroup>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? '수정 중...' : '수정'}
+            </Button>
+            <Button onClick={() => setIsEditModalOpen(false)}>취소</Button>
+          </ButtonGroup>
+        </ModalContent>
+      </Modal>
+    );
+  };
+
   if (isLoading) {
     return <div>로딩 중...</div>;
   }
@@ -243,11 +477,12 @@ const AdminPage = () => {
               <span>{story.date}</span>
             </StoryHeader>
             <ImagePreview>
-              {story.images.map((img, index) => (
+              {story.images && story.images.map((img, index) => (
                 <img key={index} src={img} alt={`story-${index}`} />
               ))}
             </ImagePreview>
             <ButtonGroup>
+              <Button onClick={() => handleEditStory(story)}>수정</Button>
               <Button onClick={() => handleDeleteStory(story.id)}>삭제</Button>
             </ButtonGroup>
           </StoryItem>
@@ -255,6 +490,8 @@ const AdminPage = () => {
       </StoryList>
 
       {isModalOpen && <StoryModal />}
+      {isEditModalOpen && <EditStoryModal />}
+      <BottomNav />
     </Container>
   );
 };
@@ -270,6 +507,10 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+
+  h1 {
+    font-size: 1.7rem;
+  }
 `;
 
 const AddButton = styled.button`
@@ -288,6 +529,7 @@ const AddButton = styled.button`
 const StoryList = styled.div`
   display: grid;
   gap: 2rem;
+  margin-bottom: 4rem;
 `;
 
 const StoryItem = styled.div`
@@ -370,6 +612,57 @@ const Button = styled.button`
   &:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
+  }
+`;
+
+const ImageSection = styled.div`
+  margin: 1rem 0;
+  
+  h3 {
+    margin: 1rem 0;
+    font-size: 1rem;
+  }
+`;
+
+const CurrentImages = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
+const NewImages = styled(CurrentImages)``;
+
+const ImageWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100px;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+`;
+
+const RemoveButton = styled.button`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
   }
 `;
 

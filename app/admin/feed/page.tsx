@@ -29,7 +29,15 @@ export default function AdminFeedPage() {
 
   return (
     <div className={styles.container}>
-      <h1 className="text-2xl font-bold p-4">피드 관리</h1>
+      <div className="flex justify-between items-center p-4">
+        <h1 className="text-2xl font-bold">피드 관리</h1>
+        <button 
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={() => router.push('/admin/feed/add')}
+        >
+          피드 추가
+        </button>
+      </div>
       
       <div className={styles.feedContainer}>
         {feeds.map((feed) => (
