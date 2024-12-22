@@ -28,6 +28,7 @@ export default function BadgeCollect({
 
   useEffect(() => {
     const fetchBadge = async () => {
+      console.log('fetchBadge 시작');
       try {
         setIsLoading(true);  // 로딩 시작
         const { data: badges, error } = await supabase
@@ -35,6 +36,8 @@ export default function BadgeCollect({
           .select('*')
           .eq('id', badgeId)
           .limit(1);
+
+        console.log('쿼리 결과:', badges, error);
 
         if (error) throw error;
         if (!badges || badges.length === 0) {
@@ -48,6 +51,8 @@ export default function BadgeCollect({
           .from('badges')
           .getPublicUrl(badge.image_url);
 
+        console.log('이미지 URL:', imageUrl);
+
         if (imageUrl.data.publicUrl) {
           setBadgeImage(imageUrl.data.publicUrl);
           setBadge(badge);
@@ -59,6 +64,7 @@ export default function BadgeCollect({
         setBadgeImage(defaultBadgeImage);
       } finally {
         setIsLoading(false);  // 로딩 종료
+        console.log('fetchBadge 종료');
       }
     };
 

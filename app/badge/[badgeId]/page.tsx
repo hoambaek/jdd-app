@@ -38,6 +38,7 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
         if (error) throw error;
         if (!badges || badges.length === 0) {
           setBadgeImage(null);
+          setLoading(false);
           return;
         }
 
@@ -59,6 +60,8 @@ export default function BadgePage({ params }: { params: { badgeId: string } }) {
       } catch (error) {
         console.error('배지 정보를 가져오는 중 오류 발생:', error);
         setBadgeImage(null);
+      } finally {
+        setLoading(false);
       }
     };
 
