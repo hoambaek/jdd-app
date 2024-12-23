@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams?.get('redirectTo') || '/activity';
@@ -92,84 +91,92 @@ export default function LoginPage() {
   };
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div className="relative flex items-center justify-center h-screen overflow-hidden">
-        {errorMessage && (
-          <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center py-2">
-            {errorMessage}
-          </div>
-        )}
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute w-full h-full object-cover"
-        >
-          <source src="bg.mp4" type="video/mp4" />
-        </video>
-        <form 
-          onSubmit={handleLogin}
-          className={`relative z-10 p-8 rounded-lg w-96 shadow-lg ${shake ? 'shake' : ''}`}
-          style={{ 
-            backgroundColor: 'rgba(0, 0, 0, 0.1)', 
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)'
-          }}
-        >
-          <h1 className="text-3xl font-bold text-white mb-6 text-center">Login</h1>
-          <div className="relative mb-4">
+    <div className="relative flex items-center justify-center h-screen overflow-hidden">
+      {errorMessage && (
+        <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center py-2">
+          {errorMessage}
+        </div>
+      )}
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute w-full h-full object-cover"
+      >
+        <source src="bg.mp4" type="video/mp4" />
+      </video>
+      <form 
+        onSubmit={handleLogin}
+        className={`relative z-10 p-8 rounded-lg w-96 shadow-lg ${shake ? 'shake' : ''}`}
+        style={{ 
+          backgroundColor: 'rgba(0, 0, 0, 0.1)', 
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)'
+        }}
+      >
+        <h1 className="text-3xl font-bold text-white mb-6 text-center">Login</h1>
+        <div className="relative mb-4">
+          <input
+            type="text"
+            placeholder="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onFocus={(e) => e.target.placeholder = ''}
+            onBlur={(e) => e.target.placeholder = 'email'}
+            className="border border-transparent rounded-full p-3 w-full pr-10 text-left"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', color: '#ffffff', outline: 'none', paddingLeft: '1rem' }}
+          />
+          <FaEnvelope className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" />
+        </div>
+        <div className="relative mb-4">
+          <input
+            type="password"
+            placeholder="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onFocus={(e) => e.target.placeholder = ''}
+            onBlur={(e) => e.target.placeholder = 'password'}
+            className="border border-transparent rounded-full p-3 w-full pr-10 text-left"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', color: '#ffffff', outline: 'none', paddingLeft: '1rem' }}
+          />
+          <FaLock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" />
+        </div>
+        <div className="flex justify-between items-center mb-6">
+          <label className="text-white">
             <input
-              type="text"
-              placeholder="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={(e) => e.target.placeholder = ''}
-              onBlur={(e) => e.target.placeholder = 'email'}
-              className="border border-transparent rounded-full p-3 w-full pr-10 text-left"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', color: '#ffffff', outline: 'none', paddingLeft: '1rem' }}
+              type="checkbox"
+              className="mr-2"
+              checked={rememberMe}
+              onChange={() => setRememberMe(!rememberMe)}
             />
-            <FaEnvelope className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" />
-          </div>
-          <div className="relative mb-4">
-            <input
-              type="password"
-              placeholder="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={(e) => e.target.placeholder = ''}
-              onBlur={(e) => e.target.placeholder = 'password'}
-              className="border border-transparent rounded-full p-3 w-full pr-10 text-left"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', color: '#ffffff', outline: 'none', paddingLeft: '1rem' }}
-            />
-            <FaLock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white" />
-          </div>
-          <div className="flex justify-between items-center mb-6">
-            <label className="text-white">
-              <input
-                type="checkbox"
-                className="mr-2"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              로그인 기억하기
-            </label>
-            <a href="/forgot-password" className="text-white">비밀번호 찾기</a>
-          </div>
-          <button
-            type="submit"
-            className="text-green-500 font-bold py-2 px-4 rounded-full w-full"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 1)' }}
-            disabled={loading}
-          >
-            {loading ? '로그인 중...' : '로그인 하기'}
-          </button>
-          <p className="text-center text-white mt-4">
-            <a href="/signup" className="font-bold">회원가입</a>
-          </p>
-        </form>
-      </div>
+            로그인 기억하기
+          </label>
+          <a href="/forgot-password" className="text-white">비밀번호 찾기</a>
+        </div>
+        <button
+          type="submit"
+          className="text-green-500 font-bold py-2 px-4 rounded-full w-full"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 1)' }}
+          disabled={loading}
+        >
+          {loading ? '로그인 중...' : '로그인 하기'}
+        </button>
+        <p className="text-center text-white mt-4">
+          <a href="/signup" className="font-bold">회원가입</a>
+        </p>
+      </form>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">
+      <div>Loading...</div>
+    </div>}>
+      <LoginForm />
     </Suspense>
   );
 } 
