@@ -15,6 +15,7 @@ interface Feed {
   image_url: string;
   tags: string;
   created_at: string;
+  date: string;
 }
 
 export default function Activity() {
@@ -34,7 +35,7 @@ export default function Activity() {
     const { data, error } = await supabase
       .from('feeds')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('date', { ascending: true });
     
     if (error) {
       console.error('Error fetching feeds:', error);
@@ -42,6 +43,14 @@ export default function Activity() {
     }
     
     if (data) setFeeds(data);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const today = new Date().toLocaleDateString('ko-KR', {
