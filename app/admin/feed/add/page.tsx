@@ -1,17 +1,34 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function AddFeedPage() {
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+  const [session, setSession] = useState(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const router = useRouter();
+
+  // 세션 체크
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        alert('로그인이 필요합니다.');
+        router.push('/login'); // 로그인 페이지로 리다이렉트
+        return;
+      }
+      setSession(session);
+    };
+
+    checkSession();
+  }, [supabase, router]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -40,6 +57,13 @@ export default function AddFeedPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!session) {
+      alert('로그인이 필요합니다.');
+      router.push('/login');
+      return;
+    }
+
     if (!imageFile || !title || !content) {
       alert('이미지, 제목, 내용을 모두 입력해주세요.');
       return;
@@ -49,67 +73,56 @@ export default function AddFeedPage() {
     try {
       // 1. Storage에 이미지 업로드
       const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      console.log('이미지 업로드 시작:', filePath);
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('feeds')
-        .upload(filePath, imageFile, {
+        .upload(`public/${fileName}`, imageFile, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true
         });
 
       if (uploadError) {
-        console.error('이미지 업로드 에러:', uploadError);
-        throw new Error(`이미지 업로드 실패: ${uploadError.message}`);
+        console.error('업로드 에러:', uploadError);
+        throw new Error('이미지 업로드에 실패했습니다.');
       }
 
-      console.log('이미지 업로드 성공:', uploadData);
-
-      // 2. 이미지 URL 가져오기
+      // 2. 업로드된 이미지의 공개 URL 가져오기
       const { data: { publicUrl } } = supabase.storage
         .from('feeds')
-        .getPublicUrl(filePath);
+        .getPublicUrl(`public/${fileName}`);
 
-      console.log('생성된 공개 URL:', publicUrl);
-
-      // 태그 문자열을 배열로 변환
+      // 태그 처리
       const tagArray = tags
         .split(',')
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0);
 
-      const feedData = {
-        title,
-        content,
-        image_url: publicUrl,
-        created_at: new Date().toISOString(),
-        tags: tagArray,
-      };
+      const currentDate = new Date().toISOString();
 
-      console.log('저장할 피드 데이터:', feedData);
-
-      // 3. 피드 데이터 저장
-      const { error: insertError, data: insertData } = await supabase
+      // 3. 데이터베이스에 피드 정보 저장 - 수정된 부분
+      const { error: insertError } = await supabase
         .from('feeds')
-        .insert([feedData])
-        .select();
+        .insert({
+          title: title,
+          content: content,
+          created_at: currentDate,
+          date: currentDate,        // date 필드 추가
+          tags: tagArray,
+          image_url: publicUrl
+        });
 
       if (insertError) {
-        console.error('데이터베이스 저장 에러:', insertError);
-        throw new Error(`피드 데이터 저장 실패: ${insertError.message}`);
+        console.error('DB 저장 에러:', insertError);
+        throw new Error(`피드 데이터 저장에 실패했습니다: ${insertError.message}`);
       }
-
-      console.log('피드 저장 성공:', insertData);
 
       alert('피드가 성공적으로 등록되었습니다.');
       router.push('/admin/feed');
       
     } catch (error) {
-      console.error('피드 등록 중 상세 에러:', error);
-      alert(`피드 등록 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      console.error('에러 발생:', error);
+      alert(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
