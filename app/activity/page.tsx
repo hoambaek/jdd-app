@@ -89,11 +89,11 @@ export default function Activity() {
               />
               {selectedFeedId === feed.id && (
                 <div className="absolute inset-0 flex flex-col px-6 py-5 text-white z-10">
-                  <h3 className="text-lg font-semibold mb-4">
+                  <h3 className="text-2xl font-semibold mb-4">
                     {feed.title}
                   </h3>
-                  <div className="flex-1 overflow-y-auto">
-                    <p className="text-sm text-white/90 whitespace-pre-wrap mb-4">
+                  <div className="flex-1 overflow-y-auto scrollbar-hide">
+                    <p className="text-base text-white/90 whitespace-pre-wrap mb-4">
                       {feed.content}
                     </p>
                     {feed.tags && (
@@ -102,7 +102,7 @@ export default function Activity() {
                           ? feed.tags.split(',').map((tag, index) => (
                               <span 
                                 key={index}
-                                className="bg-white/20 px-2.5 py-1 rounded-full text-xs"
+                                className="bg-white/20 px-2.5 py-1 rounded-full text-xl"
                               >
                                 #{tag.trim()}
                               </span>

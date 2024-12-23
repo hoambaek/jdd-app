@@ -8,3 +8,14 @@ body {
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
   background-color: black;
 }
+
+/* 스크롤바 숨기기 */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Firefox를 위한 스크롤바 숨기기 */
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
