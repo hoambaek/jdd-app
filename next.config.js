@@ -29,7 +29,9 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_KEY: process.env.NEXT_PUBLIC_SUPABASE_KEY,
   },
   experimental: {
+    serverComponents: true,
   },
+  output: 'standalone',
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
