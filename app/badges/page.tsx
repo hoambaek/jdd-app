@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './BadgesPage.css';
 import BottomNav from '../components/BottomNav';
 import { createClient } from '@supabase/supabase-js';
+import { useRequireAuth } from '../hooks/useRequireAuth';
+
+// Supabase 클라이언트를 컴포넌트 외부로 이동
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 // 배지 데이터 인터페이스 정의
 interface Badge {
@@ -20,13 +27,7 @@ interface GroupedBadges {
 }
 
 const BadgesPage = ({ badges = [] }) => {
-  console.log('Badges:', badges);
-
-  // Supabase 클라이언트 초기화
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const { session, loading } = useRequireAuth();
 
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -36,19 +37,8 @@ const BadgesPage = ({ badges = [] }) => {
   // 상태의 타입을 명시적으로 지정
   const [groupedBadges, setGroupedBadges] = useState<GroupedBadges>({});
 
-  const [userId, setUserId] = useState<string | null>(null);
-
-  // 사용자 ID 가져오기
-  useEffect(() => {
-    const getUserId = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
-    };
-    getUserId();
-  }, []);
-
-  // 사용자의 배지 데이터 가져오기
-  const fetchUserBadges = async (userId: string) => {
+  // fetchUserBadges를 useCallback으로 메모이제이션
+  const fetchUserBadges = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('user_badges')
       .select('*, badges(*)')
@@ -60,28 +50,31 @@ const BadgesPage = ({ badges = [] }) => {
     }
 
     return data;
-  };
+  }, []);
 
   useEffect(() => {
-    const loadBadges = async () => {
-      if (!userId) return;
+    let isMounted = true;
 
-      const userBadges = await fetchUserBadges(userId);
+    const loadBadges = async () => {
+      if (!session?.user) return;
+
+      const userBadges = await fetchUserBadges(session.user.id);
+      if (!isMounted) return;
+
       const grouped = {} as GroupedBadges;
+      const monthNames = [
+        'january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'
+      ];
       
       // 모든 월에 대해 기본 배지 추가
       for (let month = 0; month < 12; month++) {
         const monthStr = String(month + 1).padStart(2, '0');
-        const monthNames = [
-          'january', 'february', 'march', 'april', 'may', 'june',
-          'july', 'august', 'september', 'october', 'november', 'december'
-        ];
-        
         grouped[month] = [];
+        
         for (let i = 1; i <= 6; i++) {
           const badgeImageUrl = `https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/badges/badges/${monthStr}_${monthNames[month]}/badge_0${i}.png`;
           
-          // 사용자가 획득한 배지인지 확인
           const userHasBadge = userBadges.some(
             ub => ub.badges.image_url === badgeImageUrl
           );
@@ -95,19 +88,32 @@ const BadgesPage = ({ badges = [] }) => {
         }
       }
       
-      setGroupedBadges(grouped);
+      if (isMounted) {
+        setGroupedBadges(grouped);
+      }
     };
 
     loadBadges();
-  }, [userId]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [session, fetchUserBadges]); // fetchUserBadges를 의존성 배열에 추가
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div>로딩중...</div>
+    </div>;
+  }
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className="badges-page">
       <h1 style={{ fontSize: '1.5em', fontWeight: 'bold' }}>나의 배지 현황</h1>
-      <p style={{ 
-       
-        color: '#ededed'
-      }}>
+      <p style={{ color: '#ededed' }}>
         매월 출석체크와 다양한 활동에 참여하여<br />
         특별한 배지를 수집해보세요! 
       </p>

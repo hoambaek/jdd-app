@@ -1,33 +1,31 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
 
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-    console.log('Middleware session:', session?.user?.id);
+  // 보호된 경로 목록
+  const protectedRoutes = ['/activity']
+  const isProtectedRoute = protectedRoutes.some(route => 
+    req.nextUrl.pathname.startsWith(route)
+  )
 
-    // 세션 갱신
-    if (session) {
-      const { data: { session: refreshedSession }, error } = await supabase.auth.refreshSession();
-      if (error) throw error;
-      console.log('Session refreshed:', refreshedSession?.user?.id);
-    }
-  } catch (error) {
-    console.error('Middleware error:', error);
+  if (isProtectedRoute && !session) {
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    redirectUrl.searchParams.set('redirectTo', req.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
   }
 
-  return res;
+  return res
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
-}; 
+  matcher: ['/activity/:path*', '/login', '/signup'],
+} 

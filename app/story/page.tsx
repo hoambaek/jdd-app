@@ -5,8 +5,8 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import BottomNav from '../components/BottomNav';
-import { useSession } from '../components/SessionProvider'
 import Comments from '../components/Comments';
+import { useRequireAuth } from '../hooks/useRequireAuth';
 
 interface Story {
   id: string;
@@ -19,7 +19,6 @@ interface Story {
 }
 
 const ChatPage = () => {
-  const { session, loading } = useSession()
   const [stories, setStories] = useState<Story[]>([]);
   const [currentImageIndexes, setCurrentImageIndexes] = useState<{ [key: string]: number }>({});
   const [touchStart, setTouchStart] = useState<number>(0);
@@ -29,42 +28,45 @@ const ChatPage = () => {
   
   const supabase = createClientComponentClient();
   const router = useRouter();
+  const { session, loading } = useRequireAuth();
 
   useEffect(() => {
-    const fetchStories = async () => {
-      const { data, error } = await supabase
-        .from('stories')
-        .select(`
-          *,
-          story_images (
-            id,
-            image_url
-          )
-        `)
-        .order('created_at', { ascending: false });
+    if (session) {
+      fetchStories();
+    }
+  }, [session]);
 
-      if (error) {
-        console.error('Error fetching stories:', error);
-        return;
-      }
+  const fetchStories = async () => {
+    const { data, error } = await supabase
+      .from('stories')
+      .select(`
+        *,
+        story_images (
+          id,
+          image_url
+        )
+      `)
+      .order('created_at', { ascending: false });
 
-      if (data) {
-        const formattedStories = data.map(story => ({
-          ...story,
-          images: story.story_images?.map((img: any) => {
-            if (img.image_url.startsWith('http')) {
-              return img.image_url;
-            }
-            return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/stories/${img.image_url}`;
-          }) || []
-        }));
+    if (error) {
+      console.error('Error fetching stories:', error);
+      return;
+    }
 
-        setStories(formattedStories);
-      }
-    };
+    if (data) {
+      const formattedStories = data.map(story => ({
+        ...story,
+        images: story.story_images?.map((img: any) => {
+          if (img.image_url.startsWith('http')) {
+            return img.image_url;
+          }
+          return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/stories/${img.image_url}`;
+        }) || []
+      }));
 
-    fetchStories();
-  }, [supabase]);
+      setStories(formattedStories);
+    }
+  };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     setTouchStart(e.touches[0].clientX);
@@ -109,7 +111,11 @@ const ChatPage = () => {
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-b from-zinc-900 via-zinc-900/95 to-black flex items-center justify-center">
       <div className="text-white">로딩중...</div>
-    </div>
+    </div>;
+  }
+
+  if (!session) {
+    return null;
   }
 
   return (
@@ -180,7 +186,7 @@ const ChatPage = () => {
               </div>
               <p className="text-white/70">{story.content}</p>
               
-              {/* 댓글 컴포넌트 추가 */}
+              {/* 댓글 컴포넌트 */}
               <Comments storyId={story.id} />
             </div>
           </div>

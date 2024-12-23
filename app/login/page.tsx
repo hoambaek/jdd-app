@@ -1,74 +1,92 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
-import { supabase } from '../../utils/supabaseClient'; // Supabase 클라이언트 가져오기
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 const LoginPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams?.get('redirectTo') || '/activity';
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [shake, setShake] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
+  const supabase = createClientComponentClient();
+
+  // 저장된 이메일 불러오기
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedEmail = localStorage.getItem('rememberedEmail');
-      if (savedEmail) {
-        setEmail(savedEmail);
-        setRememberMe(true);
-      }
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
     }
   }, []);
 
-  useEffect(() => {
-    // 비디오 프리로드
-    if (videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.preload = "auto";
-    }
-  }, []);
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage('');
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error('Error fetching user:', error);
-      } else {
-        setUser(data.user);
-      }
-    };
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
 
-    fetchUser();
-  }, []);
-
-  const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error('로그인 오류:', error);
-      setErrorMessage('이메일 혹은 비밀번호가 틀려요.');
+    if (!trimmedEmail || !trimmedPassword) {
+      setErrorMessage('이메일과 비밀번호를 입력해주세요.');
       setShake(true);
-      setTimeout(() => {
-        setShake(false);
-        setErrorMessage('');
-      }, 5000);
-    } else {
-      if (rememberMe) {
-        localStorage.setItem('rememberedEmail', email);
-      } else {
-        localStorage.removeItem('rememberedEmail');
+      setTimeout(() => setShake(false), 500);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      console.log('로그인 시도:', { email: trimmedEmail });
+      setErrorMessage('로그인 중...');
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: trimmedPassword,
+      });
+
+      console.log('로그인 응답:', { data, error });
+
+      if (error) {
+        console.error('로그인 에러:', error);
+        if (error.message === 'Invalid login credentials') {
+          setErrorMessage('이메일 혹은 비밀번호가 틀렸습니다.');
+        } else {
+          setErrorMessage(`${error.message} (${error.status})`);
+        }
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+        return;
       }
-      router.push('/activity');
+
+      if (data?.user) {
+        if (rememberMe) {
+          localStorage.setItem('rememberedEmail', trimmedEmail);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+        }
+        
+        console.log('로그인 성공:', data.user);
+        router.push(redirectTo);
+        router.refresh();
+      }
+
+    } catch (error: any) {
+      console.error('예외 발생:', error);
+      setErrorMessage('로그인 중 오류가 발생했습니다.');
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,13 +107,13 @@ const LoginPage = () => {
       >
         <source src="bg.mp4" type="video/mp4" />
       </video>
-      <div
+      <form 
+        onSubmit={handleLogin}
         className={`relative z-10 p-8 rounded-lg w-96 shadow-lg ${shake ? 'shake' : ''}`}
         style={{ 
           backgroundColor: 'rgba(0, 0, 0, 0.1)', 
-          border: '0.3px  white',
           backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)' // Safari 지원을 위해 추가
+          WebkitBackdropFilter: 'blur(10px)'
         }}
       >
         <h1 className="text-3xl font-bold text-white mb-6 text-center">Login</h1>
@@ -138,16 +156,17 @@ const LoginPage = () => {
           <a href="/forgot-password" className="text-white">비밀번호 찾기</a>
         </div>
         <button
-          onClick={handleLogin}
+          type="submit"
           className="text-green-500 font-bold py-2 px-4 rounded-full w-full"
           style={{ backgroundColor: 'rgba(255, 255, 255, 1)' }}
+          disabled={loading}
         >
-          로그인 하기
+          {loading ? '로그인 중...' : '로그인 하기'}
         </button>
         <p className="text-center text-white mt-4">
           <a href="/signup" className="font-bold">회원가입</a>
         </p>
-      </div>
+      </form>
     </div>
   );
 };

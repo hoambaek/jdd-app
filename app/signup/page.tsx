@@ -1,17 +1,15 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from '@/utils/supabaseClient';
 import { useRouter } from 'next/navigation';
-
-const supabase = createClient("https://qloytvrhkjviqyzuimio.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsb3l0dnJoa2p2aXF5enVpbWlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ0MzkxNzYsImV4cCI6MjA1MDAxNTE3Nn0.JJlf2uXjbk48w0rSGF2b8PDHz8U_TLYoxdTRdKnbqkc");
 
 export default function Signup() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
-    baptismalName: "",
+    baptismal_name: "",
     grade: "",
     email: "",
     password: "",
@@ -74,47 +72,62 @@ export default function Signup() {
   };
 
   const handleSubmit = async () => {
-    const { data, error } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-    });
-
-    if (error) {
-      console.error("Error signing up:", error.message);
-      alert("가입 중 오류가 발생했습니다: " + error.message);
-    } else {
-      console.log("User signed up successfully!");
-
-      // 사용자 정의 테이블에 데이터 삽입
-      const { error: insertError } = await supabase.from('profiles').insert([
-        {
-          id: data.user?.id, // auth.users의 id 사용
-          name: formData.name,
-          baptismalName: formData.baptismalName,
-          grade: formData.grade,
-          email: formData.email,
-          role: formData.role,
-        },
-      ]);
-
-      if (insertError) {
-        console.error("Error inserting into profiles:", insertError);
-        alert("프로필 저장 중 오류가 발생했습니다: " + (insertError.message || "알 수 없는 오류"));
-      } else {
-        // 로그인 상태 유지
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (signInError) {
-          console.error("Error signing in:", signInError.message);
-          alert("로그인 중 오류가 발생했습니다: " + signInError.message);
-        } else {
-          alert("가입이 성공적으로 완료되었습니다!");
-          router.push('/signup/complete');
-        }
+    try {
+      // 1. 입력값 검증
+      if (!formData.email || !formData.password || !formData.name || !formData.grade) {
+        alert('모든 필수 항목을 입력해주세요.');
+        return;
       }
+
+      // 2. 이메일 형식 검증
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        alert('올바른 이메일 형식을 입력해주세요.');
+        return;
+      }
+
+      // 3. 비밀번호 길이 검증
+      if (formData.password.length < 6) {
+        alert('비밀번호는 최소 6자 이상이어야 합니다.');
+        return;
+      }
+
+      console.log('회원가입 시도:', { ...formData, password: '***' });
+
+      // 4. 회원가입 시도
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            name: formData.name,
+            baptismal_name: formData.baptismal_name || null,
+            grade: formData.grade,
+            role: 'user'
+          }
+        }
+      });
+
+      if (signUpError) {
+        console.error('회원가입 에러:', signUpError);
+        throw new Error(signUpError.message);
+      }
+
+      if (!data.user) {
+        console.error('사용자 데이터 없음');
+        throw new Error('회원가입에 실패했습니다.');
+      }
+
+      console.log('회원가입 성공:', { userId: data.user.id });
+
+      // 성공 처리
+      alert('축하해요! 가입이 완료되었어요!');
+      router.push('/signup/complete');
+
+    } catch (error) {
+      console.error('회원가입 처리 중 에러:', error);
+      alert(error instanceof Error ? error.message : '회원가입 중 오류가 발생했습니다.');
     }
   };
 
@@ -160,7 +173,7 @@ export default function Signup() {
           ></div>
         </div>
 
-        <div className="p-4">
+        <div className="p-4 h-56 flex flex-col justify-center">
           {step === 1 && (
             <>
               <p className="text-center text-white mb-2">이름을 입력해주세요.</p>
@@ -173,7 +186,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="off"
-                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
+                className="w-full p-3 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -183,12 +196,12 @@ export default function Signup() {
               <input
                 ref={baptismalNameRef}
                 type="text"
-                name="baptismalName"
+                name="baptismal_name"
                 placeholder="세례명"
-                value={formData.baptismalName}
+                value={formData.baptismal_name}
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
-                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
+                className="w-full p-3 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -200,10 +213,8 @@ export default function Signup() {
                 name="grade"
                 value={formData.grade}
                 onChange={handleChange}
-                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white text-center appearance-none outline-none focus:ring-0"
-                style={{ padding: '0.5rem', lineHeight: '1.5rem', width: '187px' }}
+                className="w-full p-3 mb-4 rounded-full bg-white/10 text-white text-center appearance-none outline-none focus:ring-0"
               >
-                <option value="">학년 선택</option>
                 <option value="중1">중1</option>
                 <option value="중2">중2</option>
                 <option value="중3">중3</option>
@@ -226,7 +237,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="off"
-                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
+                className="w-full p-3 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -242,7 +253,7 @@ export default function Signup() {
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 autoComplete="new-password"
-                className="w-full p-2 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
+                className="w-full p-3 mb-4 rounded-full bg-white/10 text-white placeholder-gray-300 text-center outline-none focus:ring-0"
               />
             </>
           )}
@@ -251,40 +262,25 @@ export default function Signup() {
             <button
               onClick={handlePrevious}
               disabled={step === 1}
-              className="btn-grad disabled:opacity-50 px-4 py-1"
-              style={{
-                background: "transparent",
-                border: "2px solid white",
-                borderRadius: "50px",
-                color: "white",
-                boxShadow: "none"
-              }}
+              className={`px-4 py-1 rounded-full ${
+                step === 1
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-400 transition-colors duration-300"
+              }`}
             >
               이전
             </button>
             {step < 5 ? (
               <button
                 onClick={handleNext}
-                className="btn-grad px-4 py-1"
-                style={{ 
-                  background: "white",
-                  borderRadius: "50px",
-                  boxShadow: "none",
-                  color: "#4CB8C4"
-                }}
+                className="px-4 py-1 rounded-full bg-white text-blue-400 hover:bg-blue-400 hover:text-white transition-colors duration-300"
               >
                 다음
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                className="btn-grad px-4 py-1"
-                style={{ 
-                  background: "white",
-                  borderRadius: "50px",
-                  boxShadow: "none",
-                  color: "#4CB8C4"
-                }}
+                className="px-4 py-1 rounded-full bg-white text-blue-400 hover:bg-blue-400 hover:text-white transition-colors duration-300"
               >
                 가입
               </button>
@@ -294,4 +290,4 @@ export default function Signup() {
       </div>
     </div>
   );
-} 
+}

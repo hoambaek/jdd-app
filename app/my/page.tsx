@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
 import BottomNav from '../components/BottomNav';
 import { useRouter } from 'next/navigation';
+import { useRequireAuth } from '../hooks/useRequireAuth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,12 +19,15 @@ export default function MyPage() {
   const [userData, setUserData] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<string>('/profile-placeholder.png');
   const [isAdmin, setIsAdmin] = useState(false);
+  const { session, loading } = useRequireAuth();
 
   useEffect(() => {
-    console.log('Component mounted');
-    fetchProfileImages();
-    fetchUserData();
-  }, []);
+    if (session) {
+      console.log('Component mounted');
+      fetchProfileImages();
+      fetchUserData();
+    }
+  }, [session]);
 
   const fetchProfileImages = async () => {
     try {
@@ -54,37 +58,29 @@ export default function MyPage() {
 
   const fetchUserData = async () => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        console.error('Error fetching user:', userError);
+      if (!session?.user) return;
+
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
         return;
       }
 
-      if (user) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+      setIsAdmin(profileData?.is_admin || false);
+      console.log('Is admin from DB:', profileData?.is_admin);
 
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          return;
-        }
-
-        // DB의 is_admin 필드로 admin 체크
-        setIsAdmin(profileData?.is_admin || false);
-        console.log('Is admin from DB:', profileData?.is_admin);
-
-        setUserData({
-          ...profileData,
-          email: user.email,
-          church: '장덕동성당'
-        });
-        
-        setSelectedImage(profileData?.avatar_url || '/profile-placeholder.png');
-      }
+      setUserData({
+        ...profileData,
+        email: session.user.email,
+        church: '장덕동성당'
+      });
+      
+      setSelectedImage(profileData?.avatar_url || '/profile-placeholder.png');
     } catch (error) {
       console.error('Error in fetchUserData:', error);
     }
@@ -93,22 +89,32 @@ export default function MyPage() {
   const updateProfileImage = async (imageUrl: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ avatar_url: imageUrl })
-          .eq('id', user.id);
-
-        if (error) {
-          console.error('프로필 업데이트 실패:', error);
-          return;
-        }
-
-        setSelectedImage(imageUrl);
-        setShowImagePicker(false);
+      if (!user) {
+        console.error('사용자 정보를 찾을 수 없습니다.');
+        return;
       }
+
+      setSelectedImage(imageUrl);
+      setShowImagePicker(false);
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          avatar_url: imageUrl,
+          updated_at: new Date().toISOString()
+        })
+        .match({ id: user.id });
+
+      if (error) {
+        console.error('프로필 업데이트 실패:', error);
+        setSelectedImage(userData?.avatar_url || '/profile-placeholder.png');
+        return;
+      }
+
+      await fetchUserData();
     } catch (error) {
       console.error('프로필 이미지 업데이트 중 오류:', error);
+      setSelectedImage(userData?.avatar_url || '/profile-placeholder.png');
     }
   };
 
@@ -123,6 +129,16 @@ export default function MyPage() {
   };
 
   console.log('Rendering with isAdmin:', isAdmin); // 렌더링시 isAdmin 상태 확인
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div>로딩중...</div>
+    </div>;
+  }
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4 pb-24">
@@ -156,7 +172,7 @@ export default function MyPage() {
             <div className="flex-1 space-y-1.5">
               <div>
                 <p className="text-xl font-bold text-gray-800">{userData.name || '미입력'}</p>
-                <p className="text-sm text-gray-500">{userData.baptismalName || '세례명 미입력'}</p>
+                <p className="text-sm text-gray-500">{userData.baptismal_name || '세례명 미입력'}</p>
               </div>
               <div className="flex items-center mt-2">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">

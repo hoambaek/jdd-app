@@ -1,26 +1,16 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Session } from '@supabase/supabase-js';
+import { supabase } from '@/utils/supabaseClient';
 
-const SessionContext = createContext<{
-  session: Session | null;
-  loading: boolean;
-}>({
-  session: null,
-  loading: true,
-});
-
-export const useSession = () => useContext(SessionContext);
+const SessionContext = createContext<any>(null);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    // 초기 세션 상태 확인
+    // 초기 세션 설정
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
@@ -35,11 +25,19 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []);
 
   return (
     <SessionContext.Provider value={{ session, loading }}>
       {children}
     </SessionContext.Provider>
   );
-} 
+}
+
+export const useSession = () => {
+  const context = useContext(SessionContext);
+  if (!context) {
+    throw new Error('useSession must be used within a SessionProvider');
+  }
+  return context;
+}; 

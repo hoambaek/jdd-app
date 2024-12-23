@@ -4,20 +4,38 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './Activity.module.css';
 import BottomNav from '../components/BottomNav';
+import { useRequireAuth } from '../hooks/useRequireAuth';
+
+interface Feed {
+  id: string;
+  title: string;
+  content: string;
+  image_url: string;
+  tags: string;
+  created_at: string;
+}
 
 export default function Activity() {
-  const [feeds, setFeeds] = useState([]);
-  const [selectedFeedId, setSelectedFeedId] = useState(null);
+  const { session, loading } = useRequireAuth();
+  const [feeds, setFeeds] = useState<Feed[]>([]);
+  const [selectedFeedId, setSelectedFeedId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFeeds();
-  }, []);
+    if (session) {
+      fetchFeeds();
+    }
+  }, [session]);
 
   const fetchFeeds = async () => {
     const { data, error } = await supabase
       .from('feeds')
       .select('*')
       .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching feeds:', error);
+      return;
+    }
     
     if (data) setFeeds(data);
   };
@@ -27,6 +45,16 @@ export default function Activity() {
     month: 'long',
     day: 'numeric'
   });
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div>로딩중...</div>
+    </div>;
+  }
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className={styles.container}>
