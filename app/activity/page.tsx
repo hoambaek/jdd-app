@@ -25,17 +25,6 @@ export default function Activity() {
   const [selectedFeedId, setSelectedFeedId] = useState<string | null>(null);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-      }
-    };
-
-    initializeAuth();
-  }, []);
-
-  useEffect(() => {
     if (session) {
       fetchFeeds();
     }

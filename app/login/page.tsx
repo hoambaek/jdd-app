@@ -49,12 +49,12 @@ function LoginForm() {
       console.log('로그인 시도:', { email: trimmedEmail });
       setErrorMessage('로그인 중...');
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: { session }, error } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password: trimmedPassword,
       });
 
-      console.log('로그인 응답:', { data, error });
+      console.log('로그인 응답:', { session, error });
 
       if (error) {
         console.error('로그인 에러:', error);
@@ -68,14 +68,14 @@ function LoginForm() {
         return;
       }
 
-      if (data?.user) {
+      if (session) {
         if (rememberMe) {
           localStorage.setItem('rememberedEmail', trimmedEmail);
         } else {
           localStorage.removeItem('rememberedEmail');
         }
         
-        console.log('로그인 성공:', data.user);
+        console.log('로그인 성공:', session.user);
         router.push(redirectTo);
         router.refresh();
       }

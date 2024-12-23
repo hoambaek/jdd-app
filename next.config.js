@@ -1,3 +1,5 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -17,14 +19,23 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/badges/claim/:badgeId',
-        destination: '/badges/claim/:badgeId',
+        source: '/api/badges/claim/:badgeId',
+        destination: '/api/badges/claim/:badgeId',
       },
     ];
   },
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_KEY: process.env.NEXT_PUBLIC_SUPABASE_KEY,
+  },
+  experimental: {
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, './'),
+    };
+    return config;
   },
 }
 

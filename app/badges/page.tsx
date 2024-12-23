@@ -5,6 +5,7 @@ import './BadgesPage.css';
 import BottomNav from '../components/BottomNav';
 import { createClient } from '@supabase/supabase-js';
 import { useRequireAuth } from '../hooks/useRequireAuth';
+import BadgeLink from '@/components/BadgeLink';
 
 // Supabase 클라이언트를 컴포넌트 외부로 이동
 const supabase = createClient(
@@ -14,6 +15,7 @@ const supabase = createClient(
 
 // 배지 데이터 인터페이스 정의
 interface Badge {
+  id: string;
   created_at: string;
   image_url: string;
   name: string;
@@ -28,6 +30,7 @@ interface GroupedBadges {
 
 const BadgesPage = ({ badges = [] }) => {
   const { session, loading } = useRequireAuth();
+  const [userId, setUserId] = useState<string | null>(null);
 
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -100,6 +103,17 @@ const BadgesPage = ({ badges = [] }) => {
     };
   }, [session, fetchUserBadges]); // fetchUserBadges를 의존성 배열에 추가
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    
+    fetchUser();
+  }, []);
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
       <div>로딩중...</div>
@@ -127,13 +141,20 @@ const BadgesPage = ({ badges = [] }) => {
           </h2>
           <div className="badges-container">
             {groupedBadges[index]?.map((badge: Badge, badgeIndex: number) => (
-              <img
-                key={badgeIndex}
-                src={badge.image_url}
-                alt={badge.name}
-                className={`badge-item ${!badge.acquired ? 'not-acquired' : ''}`}
-              />
-            )) || <p>배지가 없습니다.</p>}
+              <div key={badgeIndex} className="badge-wrapper">
+                <img
+                  src={badge.image_url}
+                  alt={badge.name}
+                  className={`badge-item ${!badge.acquired ? 'not-acquired' : ''}`}
+                />
+                {!badge.acquired && userId && (
+                  <BadgeLink 
+                    badgeId={badge.id} 
+                    userId={userId}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         </div>
       ))}

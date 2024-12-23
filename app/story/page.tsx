@@ -37,14 +37,13 @@ const StoryPage = () => {
 
   useEffect(() => {
     if (!loading && !session) {
-      router.push('/login');
       return;
     }
 
     if (session) {
       fetchStories();
     }
-  }, [session, loading, router]);
+  }, [session, loading]);
 
   const fetchStories = async () => {
     const { data, error } = await supabase

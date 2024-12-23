@@ -1,47 +1,57 @@
+"use client";
+
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Session } from '@supabase/supabase-js';
 
 export function useRequireAuth() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const supabase = createClientComponentClient();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    const initSession = async () => {
+    const checkAuth = async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        setSession(currentSession);
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
-        if (!currentSession) {
-          router.push('/login');
+        if (error) {
+          console.error('인증 확인 중 오류 발생:', error);
+          router.push(`/login?redirectTo=${pathname || ''}`);
+          return;
         }
+
+        if (!currentSession) {
+          router.push(`/login?redirectTo=${pathname || ''}`);
+          return;
+        }
+
+        setSession(currentSession);
       } catch (error) {
-        console.error('세션 초기화 오류:', error);
+        console.error('인증 확인 중 예외 발생:', error);
+        router.push(`/login?redirectTo=${pathname || ''}`);
       } finally {
         setLoading(false);
       }
     };
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      setSession(currentSession);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
       setLoading(false);
       
-      if (event === 'SIGNED_OUT') {
-        router.push('/login');
+      if (!session) {
+        router.push(`/login?redirectTo=${pathname || ''}`);
       }
     });
 
-    initSession();
+    checkAuth();
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [router, supabase]);
+  }, [router, pathname, supabase.auth]);
 
   return { session, loading };
 } 

@@ -3,11 +3,16 @@ import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 
 interface QRCodeProps {
-  url: string;
-  title?: string;
+  badgeId: string;
+  userId?: string;
 }
 
-export default function QRCode({ url, title = 'badge-qr' }: QRCodeProps) {
+export default function QRCode({ badgeId, userId }: QRCodeProps) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const claimUrl = userId 
+    ? `${baseUrl}/claim/${badgeId}?userId=${userId}`
+    : `${baseUrl}/claim/${badgeId}`;
+
   const qrRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
@@ -32,7 +37,7 @@ export default function QRCode({ url, title = 'badge-qr' }: QRCodeProps) {
         
         const downloadLink = document.createElement('a');
         downloadLink.href = pngUrl;
-        downloadLink.download = `${title}.png`;
+        downloadLink.download = `${badgeId}.png`;
         document.body.appendChild(downloadLink);
         downloadLink.click();
         
@@ -51,7 +56,7 @@ export default function QRCode({ url, title = 'badge-qr' }: QRCodeProps) {
     <div className="flex flex-col items-center">
       <div ref={qrRef} className="bg-white p-4 rounded">
         <QRCodeSVG
-          value={url}
+          value={claimUrl}
           size={128}
           level="H"
           includeMargin={true}
