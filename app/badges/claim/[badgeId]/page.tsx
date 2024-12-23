@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useRequireAuth } from '@/app/hooks/useRequireAuth';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export default function ClaimBadgePage({ params }: { params: { badgeId: string } }) {
