@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useSearchParams } from 'next/navigation';
 
 const LoginPage = () => {
   const router = useRouter();
