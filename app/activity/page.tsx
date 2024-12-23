@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './Activity.module.css';
 import BottomNav from '../components/BottomNav';
@@ -16,9 +18,22 @@ interface Feed {
 }
 
 export default function Activity() {
+  const supabase = createClientComponentClient();
+  const router = useRouter();
   const { session, loading } = useRequireAuth();
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [selectedFeedId, setSelectedFeedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/login');
+      }
+    };
+
+    initializeAuth();
+  }, []);
 
   useEffect(() => {
     if (session) {

@@ -6,7 +6,7 @@ import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useSearchParams } from 'next/navigation';
 
-const LoginPage = () => {
+export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams?.get('redirectTo') || '/activity';
@@ -172,6 +172,4 @@ const LoginPage = () => {
       </div>
     </Suspense>
   );
-};
-
-export default LoginPage; 
+} 

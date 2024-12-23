@@ -6,12 +6,15 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
+  // 세션 새로고침 시도
+  await supabase.auth.getSession()
+
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
   // 보호된 경로 목록
-  const protectedRoutes = ['/activity']
+  const protectedRoutes = ['/my', '/badges', '/activity', '/story']
   const isProtectedRoute = protectedRoutes.some(route => 
     req.nextUrl.pathname.startsWith(route)
   )
@@ -27,5 +30,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/activity/:path*', '/login', '/signup'],
+  matcher: ['/my/:path*', '/badges/:path*', '/activity/:path*', '/story/:path*', '/login', '/signup']
 } 
