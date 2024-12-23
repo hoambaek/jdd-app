@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { useSession } from './SessionProvider';
+import { useRequireAuth } from '../hooks/useRequireAuth';
 
 interface Comment {
   id: string;
@@ -13,7 +13,6 @@ interface Comment {
   story_id: string;
   user_baptismal: string;
   user_profile_image: string;
-  likes: string[] | null;
 }
 
 interface CommentsProps {
@@ -52,16 +51,16 @@ interface UserProfile {
 */
 
 const Comments = ({ storyId }: CommentsProps) => {
-  const { session } = useSession();
+  const supabase = createClientComponentClient();
+  const { session } = useRequireAuth();
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<Comment[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const supabase = createClientComponentClient();
   const [showAllComments, setShowAllComments] = useState(false);
-  const COMMENTS_TO_SHOW = 3;  // 기본적으로 보여줄 댓글 수
+  const COMMENTS_TO_SHOW = 3;
 
-  // 현재 사용자의 프로필 정보를 가져오는 useEffect 수정
+  // 프로필 정보 가져오기
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!session?.user?.id) {
@@ -112,7 +111,7 @@ const Comments = ({ storyId }: CommentsProps) => {
     };
 
     fetchUserProfile();
-  }, [session?.user?.id, supabase]);
+  }, [session?.user?.id]);
 
   // 댓글 목록 가져오기
   useEffect(() => {
@@ -187,7 +186,7 @@ const Comments = ({ storyId }: CommentsProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [storyId, supabase]);
+  }, [storyId]);
 
   // 댓글 작성 처리
   const handleSubmit = async (e: React.FormEvent) => {
@@ -196,7 +195,6 @@ const Comments = ({ storyId }: CommentsProps) => {
 
     setIsSubmitting(true);
     try {
-      // 댓저 댓글 추가
       const { data: newComment, error: commentError } = await supabase
         .from('comments')
         .insert({
@@ -207,7 +205,10 @@ const Comments = ({ storyId }: CommentsProps) => {
         .select()
         .single();
 
-      if (commentError) throw commentError;
+      if (commentError) {
+        console.error('Comment error:', commentError);
+        throw commentError;
+      }
 
       // 사용자 프로필 정보 가져오기
       const { data: profileData } = await supabase
@@ -305,11 +306,11 @@ const Comments = ({ storyId }: CommentsProps) => {
                     {getTimeDifference(comment.created_at)}
                   </span>
                 </div>
-                {/* 삭제 버튼 추가 */}
+                {/* 삭제 버튼만 남기고 하트 버튼 제거 */}
                 {session?.user?.id === comment.user_id && (
                   <button
                     onClick={() => handleDeleteComment(comment.id, comment.user_id)}
-                    className="text-white/40 hover:text-white/60 transition-colors ml-2"
+                    className="text-white/40 hover:text-white/60 transition-colors"
                     aria-label="댓글 삭제"
                   >
                     ✕
@@ -360,15 +361,15 @@ const Comments = ({ storyId }: CommentsProps) => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="댓글 달기..."
-                className="flex-1 bg-transparent text-white/90 placeholder-white/40 text-sm focus:outline-none"
+                className="flex-1 bg-transparent text-white/90 placeholder-white/40 text-sm focus:outline-none min-w-0 whitespace-nowrap overflow-hidden text-ellipsis"
               />
               <button
                 type="submit"
                 disabled={!comment.trim() || isSubmitting}
-                className={`text-sm font-semibold transition-colors ${
+                className={`w-[50px] h-[40px] rounded-full flex items-center justify-center border flex-shrink-0 ${
                   comment.trim() && !isSubmitting
-                    ? 'text-blue-400 hover:text-blue-500'
-                    : 'text-blue-400/40 cursor-not-allowed'
+                    ? 'border-blue-400 text-blue-400 hover:border-blue-500 hover:text-blue-500'
+                    : 'border-blue-400/40 text-blue-400/40 cursor-not-allowed'
                 }`}
               >
                 게시

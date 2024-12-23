@@ -1,12 +1,18 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import BottomNav from '../components/BottomNav';
 import Comments from '../components/Comments';
 import { useRequireAuth } from '../hooks/useRequireAuth';
+
+// 단일 supabase 인스턴스 생성
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface Story {
   id: string;
@@ -18,7 +24,7 @@ interface Story {
   user_id: string;
 }
 
-const ChatPage = () => {
+const StoryPage = () => {
   const [stories, setStories] = useState<Story[]>([]);
   const [currentImageIndexes, setCurrentImageIndexes] = useState<{ [key: string]: number }>({});
   const [touchStart, setTouchStart] = useState<number>(0);
@@ -26,15 +32,19 @@ const ChatPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragPosition, setDragPosition] = useState(0);
   
-  const supabase = createClientComponentClient();
   const router = useRouter();
   const { session, loading } = useRequireAuth();
 
   useEffect(() => {
+    if (!loading && !session) {
+      router.push('/login');
+      return;
+    }
+
     if (session) {
       fetchStories();
     }
-  }, [session]);
+  }, [session, loading, router]);
 
   const fetchStories = async () => {
     const { data, error } = await supabase
@@ -197,4 +207,4 @@ const ChatPage = () => {
   );
 };
 
-export default ChatPage; 
+export default StoryPage; 
