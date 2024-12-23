@@ -299,10 +299,10 @@ const Comments = ({ storyId }: CommentsProps) => {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-center">
-                  <span className="font-medium text-white/90 mr-2">
+                  <span className="font-medium text-gray-500 mr-2">
                     {comment.user_baptismal}
                   </span>
-                  <span className="text-sm text-white/40">
+                  <span className="text-sm text-gray-500">
                     {getTimeDifference(comment.created_at)}
                   </span>
                 </div>
@@ -310,14 +310,14 @@ const Comments = ({ storyId }: CommentsProps) => {
                 {session?.user?.id === comment.user_id && (
                   <button
                     onClick={() => handleDeleteComment(comment.id, comment.user_id)}
-                    className="text-white/40 hover:text-white/60 transition-colors"
+                    className="text-black hover:text-black transition-colors"
                     aria-label="댓글 삭제"
                   >
                     ✕
                   </button>
                 )}
               </div>
-              <p className="text-sm text-white/70 mt-1 break-words">
+              <p className="text-sm text-black mt-1 break-words">
                 {comment.text}
               </p>
             </div>
@@ -326,20 +326,22 @@ const Comments = ({ storyId }: CommentsProps) => {
         
         {/* 더보기 버튼 */}
         {comments.length > COMMENTS_TO_SHOW && (
-          <button
-            onClick={() => setShowAllComments(!showAllComments)}
-            className="text-sm text-white/50 hover:text-white/70 transition-colors mt-2 flex items-center gap-1"
-          >
-            {showAllComments ? (
-              <>
-                접기 <span className="text-xs">▲</span>
-              </>
-            ) : (
-              <>
-                더보기 <span className="text-xs">({comments.length - COMMENTS_TO_SHOW}개의 댓글) ▼</span>
-              </>
-            )}
-          </button>
+          <div className="flex justify-center mt-2">
+            <button
+              onClick={() => setShowAllComments(!showAllComments)}
+              className="text-sm text-gray-500 hover:text-gray-500 transition-colors flex items-center gap-1"
+            >
+              {showAllComments ? (
+                <>
+                  <span className="text-gray-500">접기</span> <span className="text-xs text-gray-500">▲</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-gray-500">더보기</span> <span className="text-xs">▼</span>
+                </>
+              )}
+            </button>
+          </div>
         )}
       </div>
 
@@ -361,15 +363,15 @@ const Comments = ({ storyId }: CommentsProps) => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="댓글 달기..."
-                className="flex-1 bg-transparent text-white/90 placeholder-white/40 text-sm focus:outline-none min-w-0 whitespace-nowrap overflow-hidden text-ellipsis"
+                className="flex-1 bg-transparent text-black placeholder-gray-500 text-sm focus:outline-none min-w-0 whitespace-nowrap overflow-hidden text-ellipsis"
               />
               <button
                 type="submit"
                 disabled={!comment.trim() || isSubmitting}
-                className={`w-[50px] h-[40px] rounded-full flex items-center justify-center border flex-shrink-0 ${
+                className={`w-[50px] h-[40px] rounded-full flex items-center justify-center flex-shrink-0 ${
                   comment.trim() && !isSubmitting
-                    ? 'border-blue-400 text-blue-400 hover:border-blue-500 hover:text-blue-500'
-                    : 'border-blue-400/40 text-blue-400/40 cursor-not-allowed'
+                    ? 'text-black hover:text-black'
+                    : 'text-black/40 cursor-not-allowed'
                 }`}
               >
                 게시

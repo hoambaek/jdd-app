@@ -129,10 +129,10 @@ const StoryPage = () => {
   }
 
   return (
-    <div className="min-h-screen pb-16 pt-6 bg-gradient-to-b from-zinc-900 via-zinc-900/95 to-black">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-100 to-gray-100 p-4 pb-24">
       {stories.map((story) => (
         <div key={story.id} className="mx-4 mb-8">
-          <div className="backdrop-blur-lg bg-white/5 rounded-xl overflow-hidden shadow-lg">
+          <div className="backdrop-blur-lg bg-white/70 rounded-xl overflow-hidden shadow-lg">
             {/* 이미지 섹션 */}
             <div>
               {story.images && story.images.length > 0 && (
@@ -171,8 +171,8 @@ const StoryPage = () => {
                           key={index}
                           className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
                             index === currentImageIndexes[story.id]
-                              ? 'bg-white w-3'
-                              : 'bg-white/50'
+                              ? 'bg-black w-3'
+                              : 'bg-black/50'
                           }`}
                         />
                       ))}
@@ -185,8 +185,8 @@ const StoryPage = () => {
             {/* 콘텐츠 섹션 */}
             <div className="p-4 space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-white/90">{story.title}</h2>
-                <span className="text-sm text-white/60 font-light">
+                <h2 className="text-xl font-bold text-black/90">{story.title}</h2>
+                <span className="text-sm text-black/60 font-light">
                   {new Date(story.created_at).toLocaleDateString('ko-KR', {
                     year: 'numeric',
                     month: 'long',
@@ -194,7 +194,7 @@ const StoryPage = () => {
                   })}
                 </span>
               </div>
-              <p className="text-white/70">{story.content}</p>
+              <p className="text-black/70">{story.content}</p>
               
               {/* 댓글 컴포넌트 */}
               <Comments storyId={story.id} />
