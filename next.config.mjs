@@ -2,7 +2,14 @@
 const nextConfig = {
   images: {
     domains: ['qloytvrhkjviqyzuimio.supabase.co'],
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'qloytvrhkjviqyzuimio.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
 };
 

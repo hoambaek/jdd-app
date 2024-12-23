@@ -86,21 +86,11 @@ const AdminPage = () => {
   const uploadImage = async (file: File) => {
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `story-images/${fileName}`;
-
-      // 파일 타입 체크
-      if (!file.type.startsWith('image/')) {
-        throw new Error('이미지 파일만 업로드 가능합니다.');
-      }
-
-      // 파일 크기 체크 (10MB 제한)
-      if (file.size > 10 * 1024 * 1024) {
-        throw new Error('파일 크기는 10MB 이하여야 합니다.');
-      }
+      const fileName = `story-images/${uuidv4()}.${fileExt}`;
+      const filePath = fileName;
 
       // 파일 업로드
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('stories')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -112,19 +102,7 @@ const AdminPage = () => {
         throw new Error('이미지 업로드 중 오류가 발생했습니다.');
       }
 
-      // 공개 URL 가져오기
-      const { data: urlData } = await supabase.storage
-        .from('stories')
-        .createSignedUrl(filePath, 31536000); // 1년 유효기간
-
-      if (!urlData?.signedUrl) {
-        throw new Error('이미지 URL을 가져오는데 실패했습니다.');
-      }
-
-      // 서명된 URL에서 쿼리 파라미터 제거
-      const baseUrl = urlData.signedUrl.split('?')[0];
-      return baseUrl;
-
+      return filePath;
     } catch (error) {
       console.error('Image upload error details:', error);
       throw error;
@@ -173,30 +151,48 @@ const AdminPage = () => {
         const imageUrls = [];
         for (const image of images) {
           try {
-            const url = await uploadImage(image);
-            imageUrls.push(url);
+            const fileExt = image.name.split('.').pop();
+            const fileName = `story-images/${uuidv4()}.${fileExt}`;
+
+            // 파일 업로드
+            const { error: uploadError } = await supabase.storage
+              .from('stories')
+              .upload(fileName, image, {
+                cacheControl: '3600',
+                upsert: true
+              });
+
+            if (uploadError) {
+              console.error('Upload error:', uploadError);
+              throw new Error('이미지 업로드 중 오류가 발생했습니다.');
+            }
+
+            imageUrls.push(fileName);
+            console.log('Upload successful, path:', fileName);
           } catch (uploadError) {
             console.error('Image upload error:', uploadError);
-            throw new Error('이미지 업로드 실패');
+            throw new Error(`이미지 "${image.name}" 업로드 실패`);
           }
         }
 
         // 3. 이미지 URL DB 저장
-        const { error: imageError } = await supabase
-          .from('story_images')
-          .insert(
-            imageUrls.map(url => ({
-              story_id: storyData.id,
-              image_url: url
-            }))
-          );
+        if (imageUrls.length > 0) {
+          console.log('Saving image paths to DB:', imageUrls);
+          const { error: imageError } = await supabase
+            .from('story_images')
+            .insert(
+              imageUrls.map(path => ({
+                story_id: storyData.id,
+                image_url: path
+              }))
+            );
 
-        if (imageError) {
-          console.error('Image URL save error:', imageError);
-          throw new Error('이미지 URL 저장 실패');
+          if (imageError) {
+            console.error('Image path save error:', imageError);
+            throw new Error('이미지 경로 저장 실패');
+          }
         }
 
-        // 4. 성공 후 리스트 새로고침
         await fetchStories();
         setIsModalOpen(false);
         alert('스토리가 성공적으로 생성되었습니다.');
@@ -352,7 +348,11 @@ const AdminPage = () => {
               allImageUrls.push(url);
             } catch (uploadError) {
               console.error('Individual image upload error:', uploadError);
-              throw new Error(`이미지 "${image.name}" 업로드 실패: ${uploadError.message}`);
+              if (uploadError instanceof Error) {
+                throw new Error(`이미지 "${image.name}" 업로드 실패: ${uploadError.message}`);
+              } else {
+                throw new Error(`이미지 "${image.name}" 업로드 실패: 알 수 없는 오류`);
+              }
             }
           }
         }
