@@ -27,10 +27,10 @@ interface Story {
 const StoryPage = () => {
   const [stories, setStories] = useState<Story[]>([]);
   const [currentImageIndexes, setCurrentImageIndexes] = useState<{ [key: string]: number }>({});
-  const [touchStart, setTouchStart] = useState<number>(0);
-  const [touchEnd, setTouchEnd] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragPosition, setDragPosition] = useState(0);
+  const [touchStart, setTouchStart] = useState<{ [key: string]: number }>({});
+  const [touchEnd, setTouchEnd] = useState<{ [key: string]: number }>({});
+  const [isDragging, setIsDragging] = useState<{ [key: string]: boolean }>({});
+  const [dragPosition, setDragPosition] = useState<{ [key: string]: number }>({});
   
   const router = useRouter();
   const { session, loading } = useRequireAuth();
@@ -77,26 +77,26 @@ const StoryPage = () => {
     }
   };
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    setTouchStart(e.touches[0].clientX);
-    setIsDragging(true);
-    setDragPosition(0);
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, storyId: string) => {
+    setTouchStart(prev => ({ ...prev, [storyId]: e.touches[0].clientX }));
+    setIsDragging(prev => ({ ...prev, [storyId]: true }));
+    setDragPosition(prev => ({ ...prev, [storyId]: 0 }));
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>, storyId: string) => {
-    if (!isDragging) return;
+    if (!isDragging[storyId]) return;
     
     const currentTouch = e.touches[0].clientX;
-    const diff = touchStart - currentTouch;
-    setDragPosition(-diff);
-    setTouchEnd(currentTouch);
+    const diff = touchStart[storyId] - currentTouch;
+    setDragPosition(prev => ({ ...prev, [storyId]: -diff }));
+    setTouchEnd(prev => ({ ...prev, [storyId]: currentTouch }));
   };
 
   const handleTouchEnd = (storyId: string, maxLength: number) => {
-    if (!isDragging) return;
+    if (!isDragging[storyId]) return;
     
     const minSwipeDistance = 50;
-    const diff = touchStart - touchEnd;
+    const diff = touchStart[storyId] - touchEnd[storyId];
 
     if (Math.abs(diff) > minSwipeDistance) {
       const currentIndex = currentImageIndexes[storyId] || 0;
@@ -113,8 +113,8 @@ const StoryPage = () => {
       }
     }
 
-    setIsDragging(false);
-    setDragPosition(0);
+    setIsDragging(prev => ({ ...prev, [storyId]: false }));
+    setDragPosition(prev => ({ ...prev, [storyId]: 0 }));
   };
 
   if (loading) {
@@ -139,10 +139,10 @@ const StoryPage = () => {
                   <div 
                     className="absolute w-full h-full flex transition-transform"
                     style={{
-                      transform: `translateX(calc(${-(currentImageIndexes[story.id] || 0) * 100}% + ${dragPosition}px))`,
+                      transform: `translateX(calc(${-(currentImageIndexes[story.id] || 0) * 100}% + ${dragPosition[story.id] || 0}px))`,
                       touchAction: 'pan-y pinch-zoom'
                     }}
-                    onTouchStart={handleTouchStart}
+                    onTouchStart={(e) => handleTouchStart(e, story.id)}
                     onTouchMove={(e) => handleTouchMove(e, story.id)}
                     onTouchEnd={() => handleTouchEnd(story.id, story.images.length)}
                   >

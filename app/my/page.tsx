@@ -28,9 +28,7 @@ export default function MyPage() {
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [profileImages, setProfileImages] = useState<string[]>([]);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string>(
-    'https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/profile-images/profile1.png'
-  );
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const { session, loading } = useRequireAuth();
 
@@ -73,20 +71,22 @@ export default function MyPage() {
         return;
       }
 
-      setIsAdmin(profileData?.is_admin || false);
+      const defaultImage = 'https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/profile-images/profile1.png';
+      const avatarUrl = profileData?.avatar_url || defaultImage;
 
-      // UserData 타입에 맞게 데이터 구성
+      setIsAdmin(profileData?.is_admin || false);
+      setSelectedImage(avatarUrl);
+
       setUserData({
         id: session.user.id,
         name: profileData?.name || null,
-        avatar_url: profileData?.avatar_url || 'https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/profile-images/profile1.png',
+        avatar_url: avatarUrl,
         baptismal_name: profileData?.baptismal_name || null,
-        email: session.user.email,
+        email: session.user.email || null,
         grade: profileData?.grade || null,
         is_admin: profileData?.is_admin || false
       });
       
-      setSelectedImage(profileData?.avatar_url || 'https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/profile-images/profile1.png');
     } catch (error) {
       console.error('Error in fetchUserData:', error);
     }
@@ -95,35 +95,44 @@ export default function MyPage() {
   const updateProfileImage = async (imageUrl: string) => {
     try {
       if (!session?.user) {
-        console.error('세션이 없습니다');
+        console.error('사용자 세션이 없습니다.');
         return;
       }
 
-      console.log('이미지 업데이트 시작:', imageUrl);
+      console.log('선택된 이미지 URL:', imageUrl);
 
-      const { error } = await supabase
+      // 프로필 업데이트
+      const { data, error } = await supabase
         .from('profiles')
-        .update({ avatar_url: imageUrl })
-        .eq('id', session.user.id);
+        .update({
+          avatar_url: imageUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', session.user.id)
+        .select();
 
       if (error) {
-        console.error('업데이트 오류:', error);
+        console.error('프로필 업데이트 실패:', error);
+        alert(`프로필 이미지 업데이트에 실패했습니다: ${error.message}`);
         return;
       }
 
-      // UI 업데이트
-      setSelectedImage(imageUrl);
-      setShowImagePicker(false);
-      setUserData((prevData: UserData | null) => {
-        if (!prevData) return null;
-        return {
-          ...prevData,
-          avatar_url: imageUrl
-        };
-      });
+      if (data) {
+        console.log('프로필 업데이트 성공:', data);
+        setSelectedImage(imageUrl);
+        setShowImagePicker(false);
+        setUserData(prevData => {
+          if (!prevData) return null;
+          return {
+            ...prevData,
+            avatar_url: imageUrl,
+          };
+        });
+      }
 
     } catch (error) {
       console.error('프로필 업데이트 오류:', error);
+      alert('프로필 이미지 업데이트에 실패했습니다.');
     }
   };
 
@@ -162,7 +171,7 @@ export default function MyPage() {
             onClick={() => setShowImagePicker(true)}
           >
             <Image
-              src={selectedImage}
+              src={selectedImage || 'https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/profile-images/profile1.png'}
               alt="Profile"
               width={80}
               height={80}
