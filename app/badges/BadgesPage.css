@@ -2,8 +2,8 @@
   padding: 20px;
   max-width: 100%;
   min-height: 100vh;
-  background: linear-gradient(80deg, #ffffff 0%, #ffffff 100%);
-  color: #333;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: #ffffff;
   padding-bottom: 100px;
 }
 
@@ -16,13 +16,19 @@
 }
 
 .month-section h1 {
-  color: #010101;
+  background: linear-gradient(135deg, #FF99A3, #FFD1D1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   font-size: 26px;
   margin-bottom: 10px;
 }
 
 .month-section h2 {
-  color: #000000;
+  background: linear-gradient(135deg, #D4BBFF, #95C8D8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   font-size: 22px;
   margin: 15px 0;
 }
@@ -30,17 +36,21 @@
 .month-section h2 .month-english {
   font-weight: 300;
   font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #C2FFD1, #B5E8FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .month-section p {
-  color: #000000;
+  color: #ffffff;
   font-size: 16px;
 }
 
 .badges-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
   padding: 1rem 0;
   width: 100%;
   max-width: 100%;
@@ -57,21 +67,32 @@
 }
 
 .badge-item {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   transition: all 0.3s ease;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
 
 .badge-item:hover {
   transform: scale(1.1);
-  filter: brightness(1.1);
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.4)) brightness(1.1);
 }
 
 .badge-item.not-acquired {
-  filter: blur(3px) opacity(0.3) grayscale(100%);
+  filter: blur(1.5px) opacity(0.3) grayscale(100%);
 }
 
 .badge-item.not-acquired:hover {
   filter: blur(1.5px) opacity(0.5) grayscale(100%);
   transform: scale(1.1);
+}
+
+.badges-page h1 {
+  background: linear-gradient(135deg, #FF99A3, #FFD1D1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 32px;
+  margin-bottom: 30px;
+  font-weight: bold;
 }
