@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useRequireAuth } from '@/app/hooks/useRequireAuth';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import type { Database } from '@/lib/database.types';
 
 export default function ClaimBadgePage({ params }: { params: { badgeId: string } }) {
     const [message, setMessage] = useState('');
@@ -11,14 +11,42 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
     const [badgeInfo, setBadgeInfo] = useState<any>(null);
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { session, loading } = useRequireAuth();
+    const supabase = createClientComponentClient<Database>();
     
+    // 세션 상태 관리
+    const [session, setSession] = useState<any>(null);
+    
+    // 세션 체크 및 인증 리다이렉트
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            setSession(currentSession);
+            
+            if (!currentSession) {
+                router.push('/login');
+                return;
+            }
+        };
+        
+        checkSession();
+        
+        // 실시간 세션 상태 구독
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            if (!session) {
+                router.push('/login');
+            }
+        });
+
+        return () => subscription?.unsubscribe();
+    }, [router, supabase]);
+
+    // 배지 정보 조회
     useEffect(() => {
         const fetchBadgeInfo = async () => {
             if (!session?.user?.id) return;
             
             try {
-                const supabase = createClientComponentClient();
                 const { data, error } = await supabase
                     .from('badges')
                     .select('*')
@@ -36,7 +64,7 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
         };
 
         fetchBadgeInfo();
-    }, [params.badgeId, session]);
+    }, [params.badgeId, session, supabase]);
 
     const claimBadge = async () => {
         if (!session?.user?.id) {
@@ -77,7 +105,7 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
         }
     };
 
-    if (loading || isLoading) {
+    if (isLoading) {
         return <div className="flex items-center justify-center min-h-screen">
             <div>로딩중...</div>
         </div>;
@@ -95,11 +123,17 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
                             <img 
                                 src={badgeInfo.image_url} 
                                 alt={badgeInfo.name} 
-                                className="w-48 h-48 object-contain"
+                                className="w-48 h-48 object-contain select-none pointer-events-none"
+                                style={{
+                                    WebkitTouchCallout: 'none',
+                                    WebkitUserSelect: 'none',
+                                    userSelect: 'none',
+                                    '-webkit-user-drag': 'none'
+                                }}
                             />
                         </div>
                         {badgeInfo.description && (
-                            <p className="text-white/90 text-center mb-6">
+                            <p className="text-white/90 text-center mb-6 select-none">
                                 {badgeInfo.description}
                             </p>
                         )}
@@ -122,6 +156,24 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
                     </div>
                 )}
             </div>
+            
+            <style jsx global>{`
+                /* iOS Chrome 특정 스타일 제어 */
+                @supports (-webkit-touch-callout: none) {
+                    img {
+                        -webkit-touch-callout: none !important;
+                        -webkit-user-select: none !important;
+                        user-select: none !important;
+                        pointer-events: none !important;
+                    }
+                }
+                
+                /* QR 코드 다운로드 버튼 숨기기 */
+                ::-webkit-download-button,
+                ::-webkit-file-upload-button {
+                    display: none !important;
+                }
+            `}</style>
         </div>
     );
 }

@@ -1,18 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import BottomNav from '../components/BottomNav';
 import Comments from '../components/Comments';
 import { useRequireAuth } from '../hooks/useRequireAuth';
-
-// 단일 supabase 인스턴스 생성
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 interface Story {
   id: string;
@@ -33,6 +27,7 @@ const StoryPage = () => {
   const [dragPosition, setDragPosition] = useState<{ [key: string]: number }>({});
   
   const router = useRouter();
+  const supabase = createClientComponentClient();
   const { session, loading } = useRequireAuth();
 
   useEffect(() => {

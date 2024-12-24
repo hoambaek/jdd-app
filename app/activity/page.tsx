@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
 import styles from './Activity.module.css';
 import BottomNav from '../components/BottomNav';
-import { useRequireAuth } from '../hooks/useRequireAuth';
+import type { Database } from '@/lib/database.types';
 
 interface Feed {
   id: string;
@@ -19,9 +18,10 @@ interface Feed {
 }
 
 export default function Activity() {
-  const supabase = createClientComponentClient();
+  const supabase = createClientComponentClient<Database>();
   const router = useRouter();
-  const { session, loading } = useRequireAuth();
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [selectedFeedId, setSelectedFeedId] = useState<string | null>(null);
 
@@ -32,14 +32,33 @@ export default function Activity() {
   });
 
   useEffect(() => {
-    if (session) {
+    const getSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      setSession(session);
+      setLoading(false);
+
+      if (!session) {
+        router.push('/login');
+        return;
+      }
+
       fetchFeeds();
-    }
-  }, [session]);
+    };
+
+    getSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase, router]);
 
   const sortFeeds = (feeds: Feed[]) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);  // 시간을 00:00:00으로 설정
+    today.setHours(0, 0, 0, 0);
 
     return feeds.sort((a, b) => {
       const dateA = new Date(a.date);
@@ -48,10 +67,8 @@ export default function Activity() {
       const isPastB = dateB < today;
 
       if (isPastA === isPastB) {
-        // 둘 다 과거이거나 둘 다 미래/현재인 경우 날짜순 정렬
         return dateA.getTime() - dateB.getTime();
       }
-      // 과거 피드를 뒤로 보냄
       return isPastA ? 1 : -1;
     });
   };
@@ -100,7 +117,7 @@ export default function Activity() {
         {feeds.map((feed) => (
           <div 
             key={feed.id} 
-            className={`relative cursor-pointer ${styles.feedItem} ${
+            className={`relative cursor-pointer border-[0.4px] border-black ${styles.feedItem} ${
               isPastDate(feed.date) ? 'opacity-50' : ''
             }`}
             onClick={() => setSelectedFeedId(selectedFeedId === feed.id ? null : feed.id)}

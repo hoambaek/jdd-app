@@ -12,35 +12,25 @@ export function useRequireAuth() {
   const supabase = createClientComponentClient();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // 현재 세션 가져오기
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('세션 확인 중 오류:', error);
-          router.push('/login');
-          return;
-        }
-
-        setSession(currentSession);
-        
-        if (!currentSession) {
-          console.log('세션이 없습니다. 로그인 페이지로 이동합니다.');
-          router.push('/login');
-        }
-      } catch (error) {
-        console.error('인증 확인 중 오류:', error);
+    const getSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
         router.push('/login');
-      } finally {
-        setLoading(false);
+        return;
       }
+
+      if (!session) {
+        router.push('/login');
+      } else {
+        setSession(session);
+      }
+      setLoading(false);
     };
 
-    // 초기 세션 확인
-    checkAuth();
+    getSession();
 
-    // 세션 변경 감지
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -50,10 +40,8 @@ export function useRequireAuth() {
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [router, supabase.auth]);
+    return () => subscription.unsubscribe();
+  }, [router, supabase]);
 
   return { session, loading };
 } 

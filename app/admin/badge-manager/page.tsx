@@ -227,7 +227,9 @@ function BadgeManager() {
                             return aNum - bNum;
                         }).map((badge: any) => (
                             <div key={badge.id} style={{ 
-                                background: 'rgba(255, 255, 255, 0.25)',
+                                background: badge.name.startsWith('1-') 
+                                    ? 'rgba(255, 255, 255, 0.05)'  // 1-X 배지는 더 투명하게
+                                    : 'rgba(255, 255, 255, 0.25)', // 나머지 배지는 기존대로
                                 backdropFilter: 'blur(4px)',
                                 WebkitBackdropFilter: 'blur(4px)',
                                 borderRadius: '16px',

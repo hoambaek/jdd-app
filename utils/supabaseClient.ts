@@ -9,11 +9,3 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
   }
 });
-
-// 세션 변경 감지
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth state changed:', event);
-  if (session) {
-    console.log('New session established');
-  }
-});
