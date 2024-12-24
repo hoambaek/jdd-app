@@ -87,4 +87,22 @@ select[size] {
     background-repeat: no-repeat;
     padding-right: 40px;
   }
+}
+
+/* Dynamic Island 영역을 위한 전역 스타일 */
+body {
+  padding-top: env(safe-area-inset-top);
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top);
+    background: #ffffff;
+    z-index: 1000;
+  }
 } 
