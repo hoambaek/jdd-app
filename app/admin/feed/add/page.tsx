@@ -33,6 +33,8 @@ const AddFeedForm = () => {
   const [existingImageUrl, setExistingImageUrl] = useState('');
   const [feedId, setFeedId] = useState(null);
   const [user, setUser] = useState<User | null>(null);
+  const [date, setDate] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   // 세션 체크
   useEffect(() => {
@@ -320,6 +322,27 @@ const AddFeedForm = () => {
             onChange={(e) => setTags(e.target.value)}
             className="w-full p-2 border rounded"
             placeholder="예: 태그1, 태그2, 태그3"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">날짜</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">이미지 URL</label>
+          <input
+            type="url"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
         </div>
 
