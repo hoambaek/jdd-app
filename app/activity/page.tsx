@@ -25,39 +25,59 @@ export default function Activity() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [selectedFeedId, setSelectedFeedId] = useState<string | null>(null);
 
+  const today = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
   useEffect(() => {
     if (session) {
       fetchFeeds();
     }
   }, [session]);
 
+  const sortFeeds = (feeds: Feed[]) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);  // 시간을 00:00:00으로 설정
+
+    return feeds.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      const isPastA = dateA < today;
+      const isPastB = dateB < today;
+
+      if (isPastA === isPastB) {
+        // 둘 다 과거이거나 둘 다 미래/현재인 경우 날짜순 정렬
+        return dateA.getTime() - dateB.getTime();
+      }
+      // 과거 피드를 뒤로 보냄
+      return isPastA ? 1 : -1;
+    });
+  };
+
   const fetchFeeds = async () => {
     const { data, error } = await supabase
       .from('feeds')
-      .select('*')
-      .order('date', { ascending: true });
+      .select('*');
     
     if (error) {
       console.error('Error fetching feeds:', error);
       return;
     }
     
-    if (data) setFeeds(data);
+    if (data) {
+      const sortedFeeds = sortFeeds(data);
+      setFeeds(sortedFeeds);
+    }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const isPastDate = (dateString: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const feedDate = new Date(dateString);
+    return feedDate < today;
   };
-
-  const today = new Date().toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
@@ -80,7 +100,9 @@ export default function Activity() {
         {feeds.map((feed) => (
           <div 
             key={feed.id} 
-            className={`relative cursor-pointer ${styles.feedItem}`}
+            className={`relative cursor-pointer ${styles.feedItem} ${
+              isPastDate(feed.date) ? 'opacity-50' : ''
+            }`}
             onClick={() => setSelectedFeedId(selectedFeedId === feed.id ? null : feed.id)}
           >
             <div className="relative w-full h-full">

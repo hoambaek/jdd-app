@@ -128,14 +128,14 @@ const StoryPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-100 to-gray-100 p-4 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-100 to-gray-100 px-2 py-4 pb-24">
       {stories.map((story) => (
-        <div key={story.id} className="mx-4 mb-8">
-          <div className="backdrop-blur-lg bg-white/70 rounded-xl overflow-hidden shadow-lg">
+        <div key={story.id} className="mx-2 mb-8">
+          <div className="backdrop-blur-lg bg-white/70 rounded-xl overflow-hidden shadow-lg border border-black/[0.2]">
             {/* 이미지 섹션 */}
             <div>
               {story.images && story.images.length > 0 && (
-                <div className="relative w-full h-[400px] overflow-hidden rounded-xl">
+                <div className="relative w-full h-[400px] overflow-hidden">
                   <div 
                     className="absolute w-full h-full flex transition-transform"
                     style={{
@@ -158,7 +158,7 @@ const StoryPage = () => {
                           sizes="100vw"
                           priority
                           style={{ objectFit: 'cover' }}
-                          className="rounded-xl"
+                          className="rounded-t-xl"
                         />
                       </div>
                     ))}
