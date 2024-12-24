@@ -57,13 +57,21 @@
 }
 
 .badge-item {
-  width: 100%;
-  height: auto;
-  max-width: 100px;
-  object-fit: contain;
+  width: 80px;
+  height: 80px;
+  transition: all 0.3s ease;
 }
 
-.not-acquired {
-  filter: grayscale(100%);
-  opacity: 0.5;
+.badge-item:hover {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
+.badge-item.not-acquired {
+  filter: blur(3px) opacity(0.3) grayscale(100%);
+}
+
+.badge-item.not-acquired:hover {
+  filter: blur(1.5px) opacity(0.5) grayscale(100%);
+  transform: scale(1.1);
 }
