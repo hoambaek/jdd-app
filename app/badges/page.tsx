@@ -125,18 +125,17 @@ const BadgesPage = ({ badges = [] }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4 pb-24">
-      <h1 className="text-3xl font-bold">나의 배지 현황</h1>
-      <p style={{ color: '#000000' }}>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4 pb-24 overflow-x-hidden">
+      <h1 className="text-3xl font-bold mb-2">나의 배지 현황</h1>
+      <p className="text-black mb-4">
         매월 출석체크와 다양한 활동에 참여하여<br />
         특별한 배지를 수집해보세요! 🥳
       </p>
-      <br />
       
       {months.map((month, index) => (
-        <div className="month-section" key={index}>
-          <h2>
-            <span className="month-korean" style={{ fontWeight: 'bold' }}>{index + 1}월</span> 
+        <div className="month-section mb-6" key={index}>
+          <h2 className="mb-2">
+            <span className="month-korean font-bold">{index + 1}월</span> 
             <span className="month-english"> {month}</span>
           </h2>
           <div className="badges-container">
