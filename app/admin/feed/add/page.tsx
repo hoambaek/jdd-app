@@ -1,12 +1,18 @@
 'use client';
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient, User } from '@supabase/auth-helpers-nextjs';
 import { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Database } from '@/types/supabase';
 
 export default function AddFeedPage() {
-  const supabase = createClientComponentClient();
+  const supabase = createClientComponentClient<Database>({
+    options: {
+      persistSession: true,
+    },
+  });
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [session, setSession] = useState(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
@@ -14,6 +20,9 @@ export default function AddFeedPage() {
   const [tags, setTags] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [existingImageUrl, setExistingImageUrl] = useState('');
+  const [feedId, setFeedId] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   // 세션 체크
   useEffect(() => {
@@ -29,6 +38,40 @@ export default function AddFeedPage() {
 
     checkSession();
   }, [supabase, router]);
+
+  useEffect(() => {
+    const fetchFeedData = async () => {
+      try {
+        const id = searchParams.get('id');
+        
+        if (!id) return;
+
+        const { data, error } = await supabase
+          .from('feeds')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          console.error('데이터 로딩 실패:', error);
+          return;
+        }
+
+        if (data) {
+          setTitle(data.title || '');
+          setContent(data.content || '');
+          // tags가 배열인지 확인하고 안전하게 처리
+          setTags(Array.isArray(data.tags) ? data.tags.join(', ') : '');
+          setExistingImageUrl(data.image_url || '');
+          setFeedId(data.id);
+        }
+      } catch (error) {
+        console.error('데이터 fetch 중 오류 발생:', error);
+      }
+    };
+
+    fetchFeedData();
+  }, [searchParams, supabase]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -57,69 +100,76 @@ export default function AddFeedPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // 필수 필드 검증
+    if (!title.trim() || !content.trim()) {
+      alert('제목과 내용을 입력해주세요.');
+      return;
+    }
+
+    // 세션 확인
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       alert('로그인이 필요합니다.');
       router.push('/login');
       return;
     }
 
-    if (!imageFile || !title || !content) {
-      alert('이미지, 제목, 내용을 모두 입력해주세요.');
-      return;
-    }
-
     setIsLoading(true);
     try {
-      // 1. Storage에 이미지 업로드
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('feeds')
-        .upload(`public/${fileName}`, imageFile, {
-          cacheControl: '3600',
-          upsert: true
-        });
+      let imageUrl = '';
 
-      if (uploadError) {
-        console.error('업로드 에러:', uploadError);
-        throw new Error('이미지 업로드에 실패했습니다.');
+      // 이미지 파일이 있는 경우에만 업로드 처리
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('feeds')
+          .upload(fileName, imageFile, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: imageFile.type
+          });
+
+        if (uploadError) {
+          throw new Error('이미지 업로드에 실패했습니다: ' + uploadError.message);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('feeds')
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrl;
       }
 
-      // 2. 업로드된 이미지의 공개 URL 가져오기
-      const { data: { publicUrl } } = supabase.storage
-        .from('feeds')
-        .getPublicUrl(`public/${fileName}`);
+      // 새 피드 데이터 생성
+      const newFeed = {
+        title: title.trim(),
+        content: content.trim(),
+        created_at: new Date().toISOString(),
+        tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+        id: session.user.id,
+        image_url: imageUrl
+      };
 
-      // 태그 처리
-      const tagArray = tags
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0);
+      // feedId가 있으면 수정, 없으면 새로 생성
+      const { error: dbError } = feedId 
+        ? await supabase
+            .from('feeds')
+            .update(newFeed)
+            .eq('id', feedId)
+        : await supabase
+            .from('feeds')
+            .insert([newFeed]);
 
-      const currentDate = new Date().toISOString();
-
-      // 3. 데이터베이스에 피드 정보 저장 - 수정된 부분
-      const { error: insertError } = await supabase
-        .from('feeds')
-        .insert({
-          title: title,
-          content: content,
-          created_at: currentDate,
-          date: currentDate,        // date 필드 추가
-          tags: tagArray,
-          image_url: publicUrl
-        });
-
-      if (insertError) {
-        console.error('DB 저장 에러:', insertError);
-        throw new Error(`피드 데이터 저장에 실패했습니다: ${insertError.message}`);
+      if (dbError) {
+        throw new Error('피드 저장에 실패했습니다: ' + dbError.message);
       }
 
-      alert('피드가 성공적으로 등록되었습니다.');
+      alert('피드가 성공적으로 저장되었습니다.');
       router.push('/admin/feed');
-      
+
     } catch (error) {
       console.error('에러 발생:', error);
       alert(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
@@ -127,6 +177,42 @@ export default function AddFeedPage() {
       setIsLoading(false);
     }
   };
+
+  // 인증 상태 확인을 위한 useEffect
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) {
+          alert('로그인이 필요합니다.');
+          router.push('/login');
+          return;
+        }
+        setUser(session.user);
+
+        // 실시간 인증 상태 감지
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          (_event, session) => {
+            if (!session) {
+              alert('로그인이 필요합니다.');
+              router.push('/login');
+              return;
+            }
+            setUser(session.user);
+          }
+        );
+
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('인증 확인 중 오류:', error);
+        router.push('/login');
+      }
+    };
+
+    checkAuth();
+  }, [supabase, router]);
 
   return (
     <div className="p-4 max-w-xl mx-auto">

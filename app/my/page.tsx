@@ -160,7 +160,7 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4 pb-24">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">My Profile</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">My Profile</h1>
       
       {/* 프로필 섹션 - 이미지와 기본 정보 */}
       <div className="bg-white/40 backdrop-blur-md rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/60 mb-6">

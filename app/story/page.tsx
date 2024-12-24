@@ -129,6 +129,7 @@ const StoryPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-100 to-gray-100 px-2 py-4 pb-24">
+      <h1 className="text-4xl font-bold text-black/90 mb-6 px-2">Story</h1>
       {stories.map((story) => (
         <div key={story.id} className="mx-2 mb-8">
           <div className="backdrop-blur-lg bg-white/70 rounded-xl overflow-hidden shadow-lg border border-black/[0.2]">

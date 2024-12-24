@@ -92,8 +92,8 @@ export default function Activity() {
   return (
     <div className={styles.container}>
       <div className="px-4 pt-3 pb-2 flex items-center gap-3 mb-4">
-        <h1 className="text-3xl font-bold">Today</h1>
-        <span className="text-sm text-gray-400 font-light mt-2">{today}</span>
+        <h1 className="text-4xl font-bold">Today</h1>
+        <span className="text-lg text-gray-400 font-normal mt-2">{today}</span>
       </div>
 
       <div className={styles.feedContainer}>
