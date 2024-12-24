@@ -1,11 +1,21 @@
 'use client';
 
 import { createClientComponentClient, User } from '@supabase/auth-helpers-nextjs';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Database } from '@/types/supabase';
 
-export default function AddFeedPage() {
+const AddFeedPage = () => {
+  return (
+    <div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <AddFeedForm />
+      </Suspense>
+    </div>
+  );
+};
+
+const AddFeedForm = () => {
   const supabase = createClientComponentClient<Database>({
     options: {
       persistSession: true,
@@ -333,4 +343,6 @@ export default function AddFeedPage() {
       </form>
     </div>
   );
-} 
+};
+
+export default AddFeedPage; 
