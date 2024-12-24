@@ -160,9 +160,10 @@ const AddFeedForm = () => {
         title: title.trim(),
         content: content.trim(),
         created_at: new Date().toISOString(),
+        date: date,
         tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-        id: session.user.id,
-        image_url: imageUrl
+        user_id: session.user.id,
+        image_url: imageUrl || existingImageUrl
       };
 
       // feedId가 있으면 수정, 없으면 새로 생성
