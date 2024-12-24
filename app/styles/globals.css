@@ -89,12 +89,20 @@ select[size] {
   }
 }
 
-/* Dynamic Island 영역을 위한 전역 스타일 */
-body {
-  padding-top: env(safe-area-inset-top);
+/* Dynamic Island 영역을 위한 전역 스타일 수정 */
+:root {
+  --sat: env(safe-area-inset-top);
 }
 
-@supports (padding-top: env(safe-area-inset-top)) {
+body {
+  /* 기존 body 스타일 유지하면서 추가 */
+  padding-top: max(env(safe-area-inset-top), 20px);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* Dynamic Island 영역 처리를 위한 새로운 스타일 */
+@supports (padding: max(0px)) {
   body::before {
     content: '';
     position: fixed;
@@ -102,7 +110,19 @@ body {
     left: 0;
     right: 0;
     height: env(safe-area-inset-top);
-    background: #ffffff;
-    z-index: 1000;
+    background-color: #ffffff;
+    z-index: 9999;
+  }
+
+  /* 추가: 상단 여백을 위한 스타일 */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* iOS에서의 100vh 문제 해결을 위한 추가 스타일 */
+@supports (-webkit-touch-callout: none) {
+  body {
+    min-height: -webkit-fill-available;
   }
 } 

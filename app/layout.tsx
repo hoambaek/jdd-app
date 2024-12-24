@@ -17,6 +17,12 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "I'm JDD",
   description: "장덕동성당 중고등부 앱",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    viewportFit: 'cover',
+    minimumScale: 1,
+  },
 };
 
 export default function RootLayout({
