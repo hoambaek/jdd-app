@@ -208,21 +208,25 @@ export default function Signup() {
           {step === 3 && (
             <>
               <p className="text-center text-white mb-2">학년을 선택해주세요.</p>
-              <select
-                ref={gradeRef}
-                name="grade"
-                value={formData.grade}
-                onChange={handleChange}
-                className="w-full p-3 mb-4 rounded-full bg-white/10 text-white text-center appearance-none outline-none focus:ring-0"
-              >
-                <option value="중1">중1</option>
-                <option value="중2">중2</option>
-                <option value="중3">중3</option>
-                <option value="고1">고1</option>
-                <option value="고2">고2</option>
-                <option value="고3">고3</option>
-                <option value="선생님">선생님</option>
-              </select>
+              <div className="h-56 flex flex-col justify-center items-center">
+                <div className="w-[195px]">
+                  <select
+                    ref={gradeRef}
+                    name="grade"
+                    value={formData.grade}
+                    onChange={handleChange}
+                    className="w-full p-3 mb-4 rounded-full bg-white/10 text-white text-center appearance-none outline-none focus:ring-0"
+                  >
+                    <option value="중1">&nbsp;&nbsp;&nbsp;&nbsp;중학교 1&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                    <option value="중2">&nbsp;&nbsp;&nbsp;&nbsp;중학교 2&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                    <option value="중3">&nbsp;&nbsp;&nbsp;&nbsp;중학교 3&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                    <option value="고1">&nbsp;&nbsp;&nbsp;&nbsp;고등학교 1&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                    <option value="고2">&nbsp;&nbsp;&nbsp;&nbsp;고등학교 2&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                    <option value="고3">&nbsp;&nbsp;&nbsp;&nbsp;고등학교 3&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                    <option value="선생님">&nbsp;&nbsp;&nbsp;&nbsp;선생님&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                  </select>
+                </div>
+              </div>
             </>
           )}
           {step === 4 && (

@@ -117,7 +117,7 @@ export default function Activity() {
         {feeds.map((feed) => (
           <div 
             key={feed.id} 
-            className={`relative cursor-pointer border-[0.4px] border-black ${styles.feedItem} ${
+            className={`relative cursor-pointer border-[0.5px] border-gray-300 ${styles.feedItem} ${
               isPastDate(feed.date) ? 'opacity-50' : ''
             }`}
             onClick={() => setSelectedFeedId(selectedFeedId === feed.id ? null : feed.id)}

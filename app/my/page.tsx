@@ -137,11 +137,18 @@ export default function MyPage() {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      router.push('/'); // 로그아웃 후 메인 페이지로 이동
+      await supabase.auth.signOut();
+      // 로컬 상태 초기화
+      setUserData(null);
+      setSelectedImage(null);
+      setIsAdmin(false);
+      // 즉시 홈페이지로 리다이렉트
+      router.push('/');
+      router.refresh(); // 라우터 새로고침을 통해 전체 앱 상태 초기화
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error('로그아웃 중 오류 발생:', error);
+      // 오류가 발생하더라도 홈페이지로 리다이렉트
+      router.push('/');
     }
   };
 
