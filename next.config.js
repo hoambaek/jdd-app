@@ -31,7 +31,7 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_KEY: process.env.NEXT_PUBLIC_SUPABASE_KEY,
   },
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,
     turbo: {
       loaders: {
         '.js': ['jsx'],
