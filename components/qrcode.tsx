@@ -8,7 +8,10 @@ interface QRCodeProps {
 }
 
 export default function QRCode({ badgeId, userId }: QRCodeProps) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NODE_ENV === 'development' 
+    ? `http://localhost:${process.env.PORT || 3000}`
+    : 'https://ourjdd.com';
+    
   const claimUrl = userId 
     ? `${baseUrl}/claim/${badgeId}?userId=${userId}`
     : `${baseUrl}/claim/${badgeId}`;
