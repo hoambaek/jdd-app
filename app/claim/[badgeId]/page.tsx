@@ -120,7 +120,7 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
                         </div>
                         {badgeInfo.description && (
                             <div className={styles.textContainer}>
-                                <p className="text-white/90 text-center text-sm mt-4 whitespace-nowrap">
+                                <p className="text-white/90 text-center text-base mt-4">
                                     {badgeInfo.description}
                                 </p>
                             </div>

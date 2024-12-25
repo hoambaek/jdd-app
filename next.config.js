@@ -14,8 +14,10 @@ const nextConfig = {
   },
   compiler: {
     styledComponents: true,
+    removeConsole: process.env.NODE_ENV === "production",
   },
   reactStrictMode: true,
+  swcMinify: true,
   async rewrites() {
     return [
       {
@@ -27,9 +29,15 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_KEY: process.env.NEXT_PUBLIC_SUPABASE_KEY,
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
   },
   experimental: {
-    serverComponents: true,
+    optimizeCss: true,
+    turbo: {
+      loaders: {
+        '.js': ['jsx'],
+      },
+    },
   },
   output: 'standalone',
   webpack: (config) => {
