@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from '@supabase/supabase-js';
 
 // 환경 변수 가져오기
@@ -23,25 +23,28 @@ async function checkUser() {
 export default function Home() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
-    // 비디오 프리로드
     if (videoRef.current) {
+      videoRef.current.oncanplaythrough = () => {
+        setVideoLoaded(true);
+      };
       videoRef.current.load();
-      // 비디오 캐싱을 위한 설정
       videoRef.current.preload = "auto";
     }
-    // 다른 페이지의 비디오도 미리 로드
-    const preloadVideo = document.createElement('video');
-    preloadVideo.src = "/bg.mp4";
-    preloadVideo.preload = "auto";
   }, []);
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden font-pretendard bg-black">
+      <img
+        src="/bg.jpg"
+        alt="Background"
+        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+      />
       <video
         ref={videoRef}
-        className="absolute top-0 left-0 w-full h-full object-cover"
+        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
         src="/bg.mp4"
         autoPlay
         loop

@@ -17,6 +17,7 @@ function LoginForm() {
   const [shake, setShake] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loading, setLoading] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   const supabase = createClientComponentClient();
 
@@ -26,6 +27,16 @@ function LoginForm() {
     if (savedEmail) {
       setEmail(savedEmail);
       setRememberMe(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.oncanplaythrough = () => {
+        setVideoLoaded(true);
+      };
+      videoRef.current.load();
+      videoRef.current.preload = "auto";
     }
   }, []);
 
@@ -92,21 +103,26 @@ function LoginForm() {
 
   return (
     <div className="relative flex items-center justify-center h-screen overflow-hidden">
-      {errorMessage && (
-        <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center py-2">
-          {errorMessage}
-        </div>
-      )}
+      <img
+        src="/bg.jpg"
+        alt="Background"
+        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+      />
       <video
         ref={videoRef}
         autoPlay
         loop
         muted
         playsInline
-        className="absolute w-full h-full object-cover"
+        className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
       >
         <source src="bg.mp4" type="video/mp4" />
       </video>
+      {errorMessage && (
+        <div className="absolute top-0 left-0 right-0 bg-white bg-opacity-50 text-black text-center py-2">
+          {errorMessage}
+        </div>
+      )}
       <form 
         onSubmit={handleLogin}
         className={`relative z-10 p-8 rounded-lg w-96 shadow-lg ${shake ? 'shake' : ''}`}

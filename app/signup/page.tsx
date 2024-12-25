@@ -22,6 +22,7 @@ export default function Signup() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
     switch (step) {
@@ -46,8 +47,10 @@ export default function Signup() {
   }, [step]);
 
   useEffect(() => {
-    // 비디오 프리로드
     if (videoRef.current) {
+      videoRef.current.oncanplaythrough = () => {
+        setVideoLoaded(true);
+      };
       videoRef.current.load();
       videoRef.current.preload = "auto";
     }
@@ -73,20 +76,17 @@ export default function Signup() {
 
   const handleSubmit = async () => {
     try {
-      // 1. 입력값 검증
       if (!formData.email || !formData.password || !formData.name || !formData.grade) {
         alert('모든 필수 항목을 입력해주세요.');
         return;
       }
 
-      // 2. 이메일 형식 검증
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         alert('올바른 이메일 형식을 입력해주세요.');
         return;
       }
 
-      // 3. 비밀번호 길이 검증
       if (formData.password.length < 6) {
         alert('비밀번호는 최소 6자 이상이어야 합니다.');
         return;
@@ -94,7 +94,6 @@ export default function Signup() {
 
       console.log('회원가입 시도:', { ...formData, password: '***' });
 
-      // 4. 회원가입 시도
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -121,7 +120,6 @@ export default function Signup() {
 
       console.log('회원가입 성공:', { userId: data.user.id });
 
-      // 성공 처리
       alert('축하해요! 가입이 완료되었어요!');
       router.push('/signup/complete');
 
@@ -137,15 +135,18 @@ export default function Signup() {
 
   return (
     <div className="relative flex justify-center items-center min-h-screen">
+      <img
+        src="/bg.jpg"
+        alt="Background"
+        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+      />
       <video
         ref={videoRef}
         autoPlay
         loop
         muted
         playsInline
-        preload="auto"
-        className="absolute w-full h-full object-cover"
-        style={{ zIndex: -1 }}
+        className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
       >
         <source src="/bg.mp4" type="video/mp4" />
       </video>
