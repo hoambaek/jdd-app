@@ -96,6 +96,21 @@ export default function Activity() {
     return feedDate < today;
   };
 
+  const groupFeedsByStatus = (feeds: Feed[]) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return feeds.reduce((acc, feed) => {
+      const feedDate = new Date(feed.date);
+      if (feedDate < today) {
+        acc.past.push(feed);
+      } else {
+        acc.current.push(feed);
+      }
+      return acc;
+    }, { current: [] as Feed[], past: [] as Feed[] });
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
       <div>로딩중...</div>
@@ -114,12 +129,10 @@ export default function Activity() {
       </div>
 
       <div className={styles.feedContainer}>
-        {feeds.map((feed) => (
+        {groupFeedsByStatus(feeds).current.map((feed) => (
           <div 
             key={feed.id} 
-            className={`relative cursor-pointer border-[0.5px] border-gray-300 ${styles.feedItem} ${
-              isPastDate(feed.date) ? 'opacity-50' : ''
-            }`}
+            className={`relative cursor-pointer border-[0.5px] border-gray-300 ${styles.feedItem}`}
             onClick={() => setSelectedFeedId(selectedFeedId === feed.id ? null : feed.id)}
           >
             <div className="relative w-full h-full">
@@ -165,6 +178,68 @@ export default function Activity() {
             </div>
           </div>
         ))}
+
+        {groupFeedsByStatus(feeds).past.length > 0 && (
+          <>
+            <div className="w-full px-5 py-2">
+              <div className="border-t border-gray-300"></div>
+              
+            </div>
+            
+            {groupFeedsByStatus(feeds).past.map((feed) => (
+              <div 
+                key={feed.id} 
+                className={`relative cursor-pointer border-[0.5px] border-gray-300 ${styles.feedItem} opacity-50`}
+                onClick={() => setSelectedFeedId(selectedFeedId === feed.id ? null : feed.id)}
+              >
+                <div className="relative w-full h-full">
+                  <img 
+                    src={feed.image_url} 
+                    alt="Feed Image"
+                    className={`w-full h-full object-cover transition-all duration-300 ${
+                      selectedFeedId === feed.id ? 'blur-xl' : ''
+                    }`}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-black font-bold text-2xl drop-shadow-[0_4px_3px_rgba(0,0,0,0.5)]">완료</span>
+                  </div>
+                  <div 
+                    className={`absolute inset-0 bg-black backdrop-blur-xl transition-all duration-300 ${
+                      selectedFeedId === feed.id ? 'opacity-70' : 'opacity-0'
+                    }`}
+                  />
+                  {selectedFeedId === feed.id && (
+                    <div className="absolute inset-0 flex flex-col px-6 py-5 text-white z-10">
+                      <h3 className="text-2xl font-semibold mb-4">
+                        {feed.title}
+                      </h3>
+                      <div className="flex-1 overflow-y-auto scrollbar-hide">
+                        <p className="text-base text-white/90 whitespace-pre-wrap mb-4">
+                          {feed.content}
+                        </p>
+                        {feed.tags && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {typeof feed.tags === 'string' 
+                              ? feed.tags.split(',').map((tag, index) => (
+                                  <span 
+                                    key={index}
+                                    className="bg-white/20 px-2.5 py-1 rounded-full text-xs"
+                                  >
+                                    #{tag.trim()}
+                                  </span>
+                                ))
+                              : null
+                            }
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </>
+        )}
       </div>
 
       <BottomNav />
