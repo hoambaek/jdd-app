@@ -29,22 +29,27 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_KEY: process.env.NEXT_PUBLIC_SUPABASE_KEY,
-    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
   },
   experimental: {
     optimizeCss: true,
     turbo: {
+      loaders: {
+        '.js': ['jsx'],
+      },
       rules: {
-        // 필요한 규칙들을 여기에 추가
+        // 필요한 규칙들
       }
-    }
+    },
   },
   output: 'standalone',
-  webpack: (config) => {
+  webpack: (config, { dev, isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, './'),
     };
+    if (dev) {
+      config.cache = false;
+    }
     return config;
   },
 }
