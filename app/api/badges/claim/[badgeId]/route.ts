@@ -102,7 +102,8 @@ export async function POST(
     console.log('Badge claimed successfully:', insertedBadge);
     return NextResponse.json({
       message: '배지를 성공적으로 획득했습니다!',
-      data: insertedBadge
+      data: insertedBadge,
+      showOverlay: true
     });
 
   } catch (error) {

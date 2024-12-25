@@ -9,6 +9,7 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [badgeInfo, setBadgeInfo] = useState<any>(null);
+    const [isButtonLoading, setIsButtonLoading] = useState(false);
     const searchParams = useSearchParams();
     const router = useRouter();
     const supabase = createClientComponentClient<Database>();
@@ -72,7 +73,7 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
             return;
         }
 
-        setIsLoading(true);
+        setIsButtonLoading(true);
         try {
             const response = await fetch(`/api/badges/claim/${params.badgeId}`, {
                 method: 'POST',
@@ -89,11 +90,6 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
             
             if (response.ok) {
                 setMessage('배지를 성공적으로 획득했습니다!');
-                // 3초 후 배지 페이지로 리다이렉트
-                setTimeout(() => {
-                    router.push('/badges');
-                    router.refresh();
-                }, 3000);
             } else {
                 setMessage(data.error || '배지 획득에 실패했습니다.');
             }
@@ -101,7 +97,7 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
             console.error('Error claiming badge:', error);
             setMessage('예기치 않은 오류가 발생했습니다.');
         } finally {
-            setIsLoading(false);
+            setIsButtonLoading(false);
         }
     };
 
@@ -112,14 +108,15 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
     }
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-blue-500 to-purple-500">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 max-w-md w-full shadow-xl">
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-gray-900 via-black to-gray-900">
+            <div id="tsparticles" className="absolute inset-0"></div>
+            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-8 max-w-md w-full shadow-xl relative">
                 {badgeInfo && (
                     <>
                         <h1 className="text-2xl font-bold text-white mb-4 text-center">
                             {badgeInfo.name || '배지 획득하기'}
                         </h1>
-                        <div className="flex justify-center mb-6">
+                        <div className="flex justify-center mb-6 relative">
                             <img 
                                 src={badgeInfo.image_url} 
                                 alt={badgeInfo.name} 
@@ -131,6 +128,13 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
                                     '-webkit-user-drag': 'none'
                                 }}
                             />
+                            {message && message.includes('성공') && (
+                                <div className="fixed inset-0 flex items-center justify-center z-50">
+                                    <div className="bg-green-500 text-white text-2xl font-bold p-6 rounded-lg shadow-lg animate-fade-in text-center max-w-md mx-4">
+                                        🎉 배지를 성공적으로 획득했습니다! 🎉
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         {badgeInfo.description && (
                             <p className="text-white/90 text-center mb-6 select-none">
@@ -142,36 +146,20 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
                 
                 <button 
                     onClick={claimBadge}
-                    disabled={isLoading}
+                    disabled={isButtonLoading}
                     className="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isLoading ? '처리 중...' : '배지 받기'}
+                    {isButtonLoading ? '처리 중...' : '배지 받기'}
                 </button>
-                
-                {message && (
-                    <div className={`mt-4 p-3 rounded text-center ${
-                        message.includes('성공') ? 'bg-green-500/20' : 'bg-red-500/20'
-                    } text-white`}>
-                        {message}
-                    </div>
-                )}
             </div>
             
             <style jsx global>{`
-                /* iOS Chrome 특정 스타일 제어 */
-                @supports (-webkit-touch-callout: none) {
-                    img {
-                        -webkit-touch-callout: none !important;
-                        -webkit-user-select: none !important;
-                        user-select: none !important;
-                        pointer-events: none !important;
-                    }
+                @keyframes fade-in {
+                    from { opacity: 0; transform: translateY(-20px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
-                
-                /* QR 코드 다운로드 버튼 숨기기 */
-                ::-webkit-download-button,
-                ::-webkit-file-upload-button {
-                    display: none !important;
+                .animate-fade-in {
+                    animation: fade-in 0.5s ease-out forwards;
                 }
             `}</style>
         </div>

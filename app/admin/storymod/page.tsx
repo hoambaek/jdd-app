@@ -113,6 +113,7 @@ const AdminPage = () => {
   const StoryModal = () => {
     const [title, setTitle] = useState('');
     const [date, setDate] = useState('');
+    const [place, setPlace] = useState('');
     const [images, setImages] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -126,7 +127,7 @@ const AdminPage = () => {
     };
 
     const handleSubmit = async () => {
-      if (!title || !date || images.length === 0) {
+      if (!title || !date || !place || images.length === 0) {
         alert('모든 필드를 입력해주세요.');
         return;
       }
@@ -137,7 +138,7 @@ const AdminPage = () => {
         const { data: storyData, error: storyError } = await supabase
           .from('stories')
           .insert([
-            { title, date }
+            { title, date, place }
           ])
           .select()
           .single();
@@ -219,6 +220,12 @@ const AdminPage = () => {
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
+          <Input
+            type="text"
+            placeholder="장소"
+            value={place}
+            onChange={(e) => setPlace(e.target.value)}
+          />
           <ImageUpload>
             <input
               type="file"
@@ -272,6 +279,7 @@ const AdminPage = () => {
   const EditStoryModal = () => {
     const [title, setTitle] = useState(editingStory?.title || '');
     const [date, setDate] = useState(editingStory?.date || '');
+    const [place, setPlace] = useState(editingStory?.place || '');
     const [currentImages, setCurrentImages] = useState<string[]>(editingStory?.images || []);
     const [newImages, setNewImages] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -301,8 +309,8 @@ const AdminPage = () => {
     };
 
     const handleSubmit = async () => {
-      if (!title || !date) {
-        alert('제목과 날짜를 입력해주세요.');
+      if (!title || !date || !place) {
+        alert('제목, 날짜, 장소를 입력해주세요.');
         return;
       }
 
@@ -316,7 +324,7 @@ const AdminPage = () => {
         // 1. 스토리 정보 업데이트
         const { error: storyError } = await supabase
           .from('stories')
-          .update({ title, date })
+          .update({ title, date, place })
           .eq('id', editingStory?.id);
 
         if (storyError) {
@@ -400,6 +408,12 @@ const AdminPage = () => {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+          />
+          <Input
+            type="text"
+            placeholder="장소"
+            value={place}
+            onChange={(e) => setPlace(e.target.value)}
           />
           
           <ImageSection>

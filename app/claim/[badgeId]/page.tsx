@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useRequireAuth } from '../../hooks/useRequireAuth';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import styles from './ClaimPage.module.css';
 
 interface BadgeInfo {
   id: string;
@@ -14,15 +15,17 @@ interface BadgeInfo {
 
 export default function ClaimBadgePage({ params }: { params: { badgeId: string } }) {
     const [message, setMessage] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [badgeInfo, setBadgeInfo] = useState<BadgeInfo | null>(null);
     const searchParams = useSearchParams();
     const router = useRouter();
     const { session, loading } = useRequireAuth();
     const supabase = createClientComponentClient();
+    const [showOverlay, setShowOverlay] = useState(false);
     
     useEffect(() => {
         const fetchBadgeInfo = async () => {
+            setIsLoading(true);
             try {
                 const { data, error } = await supabase
                     .from('badges')
@@ -69,14 +72,14 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
             });
 
             const data = await response.json();
-            console.log('Response:', data);
             
             if (response.ok) {
                 setMessage('배지를 성공적으로 획득했습니다!');
+                setShowOverlay(true);
                 setTimeout(() => {
                     router.push('/badges');
                     router.refresh();
-                }, 3000);
+                }, 2000);
             } else {
                 setMessage(data.error || '배지 획득에 실패했습니다.');
             }
@@ -101,44 +104,53 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
     }
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-blue-500 to-purple-500">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 max-w-md w-full shadow-xl">
+        <div className={styles.container}>
+            <div className={styles.badgeWrapper}>
                 {badgeInfo && (
                     <>
-                        <h1 className="text-2xl font-bold text-white mb-4 text-center">
+                        <h1 className="text-xl font-bold text-white text-center mb-6">
                             {badgeInfo.name || '배지 획득하기'}
                         </h1>
-                        <div className="flex justify-center mb-6">
+                        <div className="flex justify-center">
                             <img 
                                 src={badgeInfo.image_url} 
                                 alt={badgeInfo.name} 
-                                className="w-48 h-48 object-contain"
+                                className={styles.badgeImage}
                             />
                         </div>
                         {badgeInfo.description && (
-                            <p className="text-white/90 text-center mb-6">
-                                {badgeInfo.description}
-                            </p>
+                            <div className={styles.textContainer}>
+                                <p className="text-white/90 text-center text-sm mt-4 whitespace-nowrap">
+                                    {badgeInfo.description}
+                                </p>
+                            </div>
                         )}
                     </>
                 )}
-                
-                <button 
-                    onClick={claimBadge}
-                    disabled={isLoading}
-                    className="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isLoading ? '처리 중...' : '배지 받기'}
-                </button>
-                
-                {message && (
-                    <div className={`mt-4 p-3 rounded text-center ${
-                        message.includes('성공') ? 'bg-green-500/20' : 'bg-red-500/20'
-                    } text-white`}>
-                        {message}
-                    </div>
+                {showOverlay && (
+                    <img 
+                        src="https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/badges/badges/good.png"
+                        alt="Success Overlay"
+                        className={styles.overlayImage}
+                    />
                 )}
             </div>
+            
+            <button 
+                onClick={claimBadge}
+                disabled={isLoading}
+                className="w-64 bg-white hover:bg-green-300/40 text-black font-bold py-4 px-6 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+            >
+                {isLoading ? '처리 중...' : '배지 받기'}
+            </button>
+            
+            {message && (
+                <div className={`p-3 rounded text-center w-64 ${
+                    message.includes('성공') ? 'bg-green-500/20' : 'bg-red-500/20'
+                } text-white text-sm`}>
+                    {message}
+                </div>
+            )}
         </div>
     );
 } 

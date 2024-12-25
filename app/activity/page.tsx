@@ -150,7 +150,7 @@ export default function Activity() {
                           ? feed.tags.split(',').map((tag, index) => (
                               <span 
                                 key={index}
-                                className="bg-white/20 px-2.5 py-1 rounded-full text-xl"
+                                className="bg-white/20 px-2.5 py-1 rounded-full text-xs"
                               >
                                 #{tag.trim()}
                               </span>

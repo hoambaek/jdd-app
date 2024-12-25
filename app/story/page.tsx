@@ -1,12 +1,18 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import BottomNav from '../components/BottomNav';
 import Comments from '../components/Comments';
 import { useRequireAuth } from '../hooks/useRequireAuth';
+
+// 단일 supabase 인스턴스 생성
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface Story {
   id: string;
@@ -16,6 +22,7 @@ interface Story {
   content: string;
   images: string[];
   user_id: string;
+  place: string;
 }
 
 const StoryPage = () => {
@@ -27,7 +34,6 @@ const StoryPage = () => {
   const [dragPosition, setDragPosition] = useState<{ [key: string]: number }>({});
   
   const router = useRouter();
-  const supabase = createClientComponentClient();
   const { session, loading } = useRequireAuth();
 
   useEffect(() => {
@@ -127,7 +133,18 @@ const StoryPage = () => {
       <h1 className="text-4xl font-bold text-black/90 mb-6 px-2">Story</h1>
       {stories.map((story) => (
         <div key={story.id} className="mx-2 mb-8">
-          <div className="backdrop-blur-lg bg-white/70 rounded-xl overflow-hidden shadow-lg border border-black/[0.2]">
+          {/* 날짜 섹션 */}
+          <div className="p-2">
+            <span className="text-base text-black/60 font-light">
+              {new Date(story.created_at).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </span>
+          </div>
+
+          <div className="backdrop-blur-lg bg-white/70 rounded-xl overflow-hidden shadow-lg border border-black/[0.2] mt-0">
             {/* 이미지 섹션 */}
             <div>
               {story.images && story.images.length > 0 && (
@@ -180,14 +197,18 @@ const StoryPage = () => {
             {/* 콘텐츠 섹션 */}
             <div className="p-4 space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-black/90">{story.title}</h2>
-                <span className="text-sm text-black/60 font-light">
-                  {new Date(story.created_at).toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </span>
+                <h2 className="text-xl font-bold text-black/90">
+                  {story.title}
+                </h2>
+                {story.place && (
+                  <span className="text-sm text-black/60 flex items-center">
+                    <svg className="w-4 h-4 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C8.686 2 6 4.686 6 8c0 5.25 6 12 6 12s6-6.75 6-12c0-3.314-2.686-6-6-6z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                    {story.place}
+                  </span>
+                )}
               </div>
               <p className="text-black/70">{story.content}</p>
               

@@ -256,13 +256,24 @@ export default function MyPage() {
       )}
 
       {/* 로그아웃 버튼 */}
-      <div className="mt-6 mb-20">
+      <div className="mt-6 mb-6">
         <button
           onClick={handleLogout}
           className="w-full bg-white/50 backdrop-blur-sm text-gray-700 py-3.5 rounded-2xl shadow-lg hover:bg-white/60 transition-all duration-300 font-medium border border-white/60"
         >
           로그아웃
         </button>
+      </div>
+
+      {/* con.png 이미지 추가 */}
+      <div className="flex justify-center mb-20">
+        <Image
+          src="/con.png"
+          alt="Con"
+          width={50}
+          height={50}
+          className="object-contain"
+        />
       </div>
       
       <BottomNav />
