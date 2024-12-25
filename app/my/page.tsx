@@ -8,6 +8,7 @@ import BottomNav from '../components/BottomNav';
 import { useRouter } from 'next/navigation';
 import { useRequireAuth } from '../hooks/useRequireAuth';
 import type { Database } from '../types/supabase';
+import confetti from 'canvas-confetti';
 
 const supabase = createClientComponentClient<Database>();
 
@@ -152,6 +153,44 @@ export default function MyPage() {
     }
   };
 
+  const handleImageClick = () => {
+    const count = 200;
+    const defaults = {
+      origin: { y: 0.7 }
+    };
+
+    function fire(particleRatio: number, opts: { spread?: number; startVelocity?: number; decay?: number; scalar?: number }) {
+      confetti({
+        ...defaults,
+        ...opts,
+        particleCount: Math.floor(count * particleRatio)
+      });
+    }
+
+    fire(0.25, {
+      spread: 26,
+      startVelocity: 55,
+    });
+    fire(0.2, {
+      spread: 60,
+    });
+    fire(0.35, {
+      spread: 100,
+      decay: 0.91,
+      scalar: 0.8
+    });
+    fire(0.1, {
+      spread: 120,
+      startVelocity: 25,
+      decay: 0.92,
+      scalar: 1.2
+    });
+    fire(0.1, {
+      spread: 120,
+      startVelocity: 45,
+    });
+  };
+
   console.log('Rendering with isAdmin:', isAdmin); // 렌더링시 isAdmin 상태 확인
 
   if (loading) {
@@ -272,7 +311,12 @@ export default function MyPage() {
           alt="Con"
           width={50}
           height={50}
-          className="object-contain"
+          className="object-contain cursor-pointer"
+          onClick={handleImageClick}
+          style={{ transition: 'transform 0.2s' }}
+          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
+          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         />
       </div>
       

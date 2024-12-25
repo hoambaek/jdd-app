@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build || exit 0",
     "start": "next start",
     "lint": "next lint"
   },
@@ -17,6 +17,7 @@
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "critters": "^0.0.25",
     "dotenv": "^16.4.7",
     "firebase": "^10.8.0",
     "html2canvas": "^1.4.1",

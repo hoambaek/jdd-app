@@ -34,10 +34,10 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     turbo: {
-      loaders: {
-        '.js': ['jsx'],
-      },
-    },
+      rules: {
+        // 필요한 규칙들을 여기에 추가
+      }
+    }
   },
   output: 'standalone',
   webpack: (config) => {
