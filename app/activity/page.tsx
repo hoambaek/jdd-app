@@ -189,7 +189,7 @@ export default function Activity() {
             {groupFeedsByStatus(feeds).past.map((feed) => (
               <div 
                 key={feed.id} 
-                className={`relative cursor-pointer ${styles.pastFeedItem} opacity-50`}
+                className={`relative cursor-pointer ${styles.pastFeedItem}`}
                 onClick={() => setSelectedFeedId(selectedFeedId === feed.id ? null : feed.id)}
               >
                 <div className="relative w-full h-full">
@@ -197,15 +197,12 @@ export default function Activity() {
                     src={feed.image_url} 
                     alt="Feed Image"
                     className={`w-full h-full object-cover transition-all duration-300 ${
-                      selectedFeedId === feed.id ? 'blur-xl' : ''
+                      selectedFeedId === feed.id ? 'blur-xl' : 'blur-sm'
                     }`}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-black font-bold text-2xl drop-shadow-[0_4px_3px_rgba(0,0,0,0.5)]">완료</span>
-                  </div>
                   <div 
-                    className={`absolute inset-0 bg-black backdrop-blur-xl transition-all duration-300 ${
-                      selectedFeedId === feed.id ? 'opacity-70' : 'opacity-0'
+                    className={`absolute inset-0 bg-black/50 backdrop-blur-xl transition-all duration-300 ${
+                      selectedFeedId === feed.id ? 'opacity-70' : 'opacity-40'
                     }`}
                   />
                   {selectedFeedId === feed.id && (

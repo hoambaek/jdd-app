@@ -162,5 +162,5 @@
 
 .pastFeedItem {
   composes: feedItem;
-  height: 200px !important;
+  
 } 
