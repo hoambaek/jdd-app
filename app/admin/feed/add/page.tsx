@@ -4,6 +4,7 @@ import { createClientComponentClient, User } from '@supabase/auth-helpers-nextjs
 import { useState, useCallback, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Database } from '@/types/supabase';
+import Link from 'next/link';
 
 const AddFeedPage = () => {
   return (
@@ -31,7 +32,7 @@ const AddFeedForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [existingImageUrl, setExistingImageUrl] = useState('');
-  const [feedId, setFeedId] = useState(null);
+  const [feedId, setFeedId] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [date, setDate] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -54,7 +55,7 @@ const AddFeedForm = () => {
   useEffect(() => {
     const fetchFeedData = async () => {
       try {
-        const id = searchParams.get('id');
+        const id = searchParams?.get('id');
         
         if (!id) return;
 
@@ -70,12 +71,24 @@ const AddFeedForm = () => {
         }
 
         if (data) {
-          setTitle(data.title || '');
-          setContent(data.content || '');
-          // tags가 배열인지 확인하고 안전하게 처리
-          setTags(Array.isArray(data.tags) ? data.tags.join(', ') : '');
-          setExistingImageUrl(data.image_url || '');
+          setTitle(data.title);
+          setContent(data.content);
+          if (data.image_url) {
+            setExistingImageUrl(data.image_url);
+            setImageUrl(data.image_url);
+          }
+          if (data.tags) {
+            const tagsString = Array.isArray(data.tags) 
+              ? data.tags
+                  .map(tag => tag.replace(/^\[|\]$/g, ''))
+                  .join(', ')
+              : typeof data.tags === 'string'
+                ? data.tags.replace(/^\[|\]$/g, '')
+                : '';
+            setTags(tagsString);
+          }
           setFeedId(data.id);
+          setDate(data.date || '');
         }
       } catch (error) {
         console.error('데이터 fetch 중 오류 발생:', error);
@@ -129,19 +142,19 @@ const AddFeedForm = () => {
 
     setIsLoading(true);
     try {
-      let imageUrl = '';
+      // 최종 이미지 URL 결정
+      let finalImageUrl = imageUrl || existingImageUrl;
 
-      // 이미지 파일이 있는 경우에만 업로드 처리
+      // 새로운 이미지 파일이 있는 경우 업로드
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError, data: uploadData } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('feeds')
           .upload(fileName, imageFile, {
             cacheControl: '3600',
-            upsert: true,
-            contentType: imageFile.type
+            upsert: true
           });
 
         if (uploadError) {
@@ -152,21 +165,27 @@ const AddFeedForm = () => {
           .from('feeds')
           .getPublicUrl(fileName);
 
-        imageUrl = publicUrl;
+        finalImageUrl = publicUrl;
       }
 
-      // 새 피드 데이터 생성
+      // 태그 처리 수정
+      const processedTags = tags
+        ? tags.split(',')
+            .map(tag => tag.trim())
+            .filter(Boolean)
+            .map(tag => tag.replace(/^\[|\]$/g, '')) // 앞뒤 대괄호 제거
+        : [];
+
       const newFeed = {
         title: title.trim(),
         content: content.trim(),
         created_at: new Date().toISOString(),
         date: date,
-        tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+        tags: processedTags, // 처리된 태그 배열 사용
         user_id: session.user.id,
-        image_url: imageUrl || existingImageUrl
+        image_url: finalImageUrl
       };
 
-      // feedId가 있으면 수정, 없으면 새로 생성
       const { error: dbError } = feedId 
         ? await supabase
             .from('feeds')
@@ -229,13 +248,15 @@ const AddFeedForm = () => {
 
   return (
     <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">새 피드 추가</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {feedId ? '피드 수정' : '새 피드 추가'}
+      </h1>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div
           className={`relative border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors
             ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
-            ${imageFile ? 'h-auto' : 'h-64'}`}
+            ${(imageFile || existingImageUrl) ? 'h-auto' : 'h-64'}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -247,7 +268,6 @@ const AddFeedForm = () => {
             accept="image/*"
             onChange={handleImageChange}
             className="hidden"
-            required
           />
           
           {imageFile ? (
@@ -259,6 +279,17 @@ const AddFeedForm = () => {
               />
               <p className="text-sm text-gray-500">
                 {imageFile.name}
+              </p>
+            </div>
+          ) : existingImageUrl ? (
+            <div className="space-y-4">
+              <img
+                src={existingImageUrl}
+                alt="Current Image"
+                className="max-w-full h-auto mx-auto"
+              />
+              <p className="text-sm text-gray-500">
+                현재 이미지
               </p>
             </div>
           ) : (
@@ -337,23 +368,13 @@ const AddFeedForm = () => {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">이미지 URL</label>
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
-
         <div className="flex gap-4">
           <button
             type="submit"
             disabled={isLoading}
             className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
           >
-            {isLoading ? '등록 중...' : '등록하기'}
+            {isLoading ? '저장 중...' : (feedId ? '수정하기' : '등록하기')}
           </button>
           
           <button

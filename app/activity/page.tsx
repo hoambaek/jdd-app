@@ -132,7 +132,7 @@ export default function Activity() {
         {groupFeedsByStatus(feeds).current.map((feed) => (
           <div 
             key={feed.id} 
-            className={`relative cursor-pointer border-[0.5px] border-gray-300 ${styles.feedItem}`}
+            className={`relative cursor-pointer ${styles.feedItem}`}
             onClick={() => setSelectedFeedId(selectedFeedId === feed.id ? null : feed.id)}
           >
             <div className="relative w-full h-full">
@@ -189,7 +189,7 @@ export default function Activity() {
             {groupFeedsByStatus(feeds).past.map((feed) => (
               <div 
                 key={feed.id} 
-                className={`relative cursor-pointer border-[0.5px] border-gray-300 ${styles.feedItem} opacity-50`}
+                className={`relative cursor-pointer ${styles.pastFeedItem} opacity-50`}
                 onClick={() => setSelectedFeedId(selectedFeedId === feed.id ? null : feed.id)}
               >
                 <div className="relative w-full h-full">

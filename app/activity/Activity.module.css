@@ -23,6 +23,7 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: relative;
   cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
 .feedItem img {
@@ -104,9 +105,12 @@
   font-size: 0.875rem;
 }
 
-.feedItem:hover img {
+.feedItem:hover {
   transform: scale(1.02);
-  transition: transform 0.3s ease;
+}
+
+.feedItem:hover img {
+  transform: none;
 }
 
 .selected:hover img {
@@ -154,4 +158,9 @@
   .bottomNav {
     padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
+}
+
+.pastFeedItem {
+  composes: feedItem;
+  height: 200px !important;
 } 
