@@ -23,17 +23,15 @@ export default function AdminFeedPage() {
       .order('created_at', { ascending: false });
     
     if (data) {
-      setFeeds(data);
-      if (data.tags) {
-        const tagsString = Array.isArray(data.tags) 
-          ? data.tags
-              .map(tag => tag.replace(/^\[|\]$/g, ''))
-              .join(', ')
-          : typeof data.tags === 'string'
-            ? data.tags.replace(/^\[|\]$/g, '')
-            : '';
-        setTags(tagsString);
-      }
+      const processedFeeds = data.map(feed => ({
+        ...feed,
+        tags: Array.isArray(feed.tags) 
+          ? feed.tags 
+          : typeof feed.tags === 'string'
+            ? feed.tags.replace(/[\[\]"]/g, '').split(',').map(tag => tag.trim())
+            : []
+      }));
+      setFeeds(processedFeeds);
     }
   };
 
@@ -65,13 +63,18 @@ export default function AdminFeedPage() {
               alt="Feed Image"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
               <button
                 onClick={(e) => handleEditClick(e, feed.id)}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors mb-2"
               >
                 수정하기
               </button>
+              {feed.tags && feed.tags.length > 0 && (
+                <div className="text-white text-sm">
+                  태그: {Array.isArray(feed.tags) ? feed.tags.join(', ') : feed.tags}
+                </div>
+              )}
             </div>
           </div>
         ))}

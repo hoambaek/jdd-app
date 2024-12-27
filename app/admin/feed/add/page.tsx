@@ -80,11 +80,11 @@ const AddFeedForm = () => {
           if (data.tags) {
             const tagsString = Array.isArray(data.tags) 
               ? data.tags
-                  .map(tag => tag.replace(/^\[|\]$/g, ''))
+                  .map(tag => tag.toString().replace(/[\[\]"']/g, '').trim())
                   .join(', ')
               : typeof data.tags === 'string'
-                ? data.tags.replace(/^\[|\]$/g, '')
-                : '';
+                  ? data.tags.replace(/[\[\]"']/g, '').trim()
+                  : '';
             setTags(tagsString);
           }
           setFeedId(data.id);
@@ -168,20 +168,18 @@ const AddFeedForm = () => {
         finalImageUrl = publicUrl;
       }
 
-      // 태그 처리 수정
+      // 태그 문자열 처리
       const processedTags = tags
-        ? tags.split(',')
-            .map(tag => tag.trim())
-            .filter(Boolean)
-            .map(tag => tag.replace(/^\[|\]$/g, '')) // 앞뒤 대괄호 제거
-        : [];
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag !== '');
 
       const newFeed = {
         title: title.trim(),
         content: content.trim(),
         created_at: new Date().toISOString(),
         date: date,
-        tags: processedTags, // 처리된 태그 배열 사용
+        tags: processedTags,
         user_id: session.user.id,
         image_url: finalImageUrl
       };
@@ -207,6 +205,30 @@ const AddFeedForm = () => {
       alert(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!feedId) return;
+
+    const confirmDelete = window.confirm('정말로 이 피드를 삭제하시겠습니까?');
+    if (!confirmDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('feeds')
+        .delete()
+        .eq('id', feedId);
+
+      if (error) {
+        throw new Error('피드 삭제에 실패했습니다: ' + error.message);
+      }
+
+      alert('피드가 성공적으로 삭제되었습니다.');
+      router.push('/admin/feed');
+    } catch (error) {
+      console.error('삭제 중 에러 발생:', error);
+      alert(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
     }
   };
 
@@ -384,6 +406,16 @@ const AddFeedForm = () => {
           >
             취소
           </button>
+
+          {feedId && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              삭제
+            </button>
+          )}
         </div>
       </form>
     </div>

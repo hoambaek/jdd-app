@@ -165,7 +165,7 @@ export default function Activity() {
                                 key={index}
                                 className="bg-white/20 px-2.5 py-1 rounded-full text-xs"
                               >
-                                #{tag.trim()}
+                                {tag.trim()}
                               </span>
                             ))
                           : null
@@ -202,7 +202,7 @@ export default function Activity() {
                   />
                   <div 
                     className={`absolute inset-0 bg-black/100 backdrop-blur-xl transition-all duration-300 ${
-                      selectedFeedId === feed.id ? 'opacity-90' : 'opacity-40'
+                      selectedFeedId === feed.id ? 'opacity-70' : 'opacity-30'
                     }`}
                   />
                   {selectedFeedId === feed.id && (
@@ -222,7 +222,7 @@ export default function Activity() {
                                     key={index}
                                     className="bg-white/20 px-2.5 py-1 rounded-full text-xs"
                                   >
-                                    #{tag.trim()}
+                                    {tag.trim()}
                                   </span>
                                 ))
                               : null
