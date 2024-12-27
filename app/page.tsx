@@ -36,7 +36,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden font-pretendard bg-black">
+    <div className="relative h-screen flex items-center justify-center overflow-hidden font-pretendard bg-black">
       <img
         src="/bg.jpg"
         alt="Background"
