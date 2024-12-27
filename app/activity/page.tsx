@@ -197,12 +197,12 @@ export default function Activity() {
                     src={feed.image_url} 
                     alt="Feed Image"
                     className={`w-full h-full object-cover transition-all duration-300 ${
-                      selectedFeedId === feed.id ? 'blur-sm' : 'blur-sm'
+                      selectedFeedId === feed.id ? 'blur-xl' : 'blur-none'
                     }`}
                   />
                   <div 
                     className={`absolute inset-0 bg-black/100 backdrop-blur-xl transition-all duration-300 ${
-                      selectedFeedId === feed.id ? 'opacity-90' : 'opacity-80'
+                      selectedFeedId === feed.id ? 'opacity-90' : 'opacity-20'
                     }`}
                   />
                   {selectedFeedId === feed.id && (
