@@ -83,6 +83,7 @@ const BadgesPage = ({ badges = [] }) => {
           );
 
           grouped[month].push({
+            id: `${month + 1}-${i}`,
             created_at: new Date().toISOString(),
             image_url: badgeImageUrl,
             name: `${month + 1}-${i}`,
