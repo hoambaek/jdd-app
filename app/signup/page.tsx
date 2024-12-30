@@ -142,15 +142,30 @@ export default function Signup() {
       />
       <video
         ref={videoRef}
+        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-[2000ms] ${videoLoaded ? 'opacity-100' : 'opacity-50'}`}
+        src="/bg.mp4"
         autoPlay
         loop
         muted
         playsInline
-        className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+        preload="auto"
+        controlsList="nodownload nofullscreen noremoteplayback"
+        disablePictureInPicture
+        style={{
+          pointerEvents: 'none',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          msUserSelect: 'none',
+          objectFit: 'cover',
+          objectPosition: 'center',
+          backgroundColor: 'transparent',
+          position: 'absolute',
+          zIndex: videoLoaded ? 1 : 0
+        }}
       >
         <source src="/bg.mp4" type="video/mp4" />
       </video>
-      <div className="max-w-md mx-auto p-6 bg-black/8 backdrop-blur-md rounded-lg border-[1px] border-white/0 shadow-lg shadow-black/50">
+      <div className="max-w-md mx-auto p-6 bg-black/8 backdrop-blur-md rounded-lg border-[1px] border-white/0 shadow-lg shadow-black/50 relative z-10">
         <h1 className="text-2xl font-bold text-center mb-6 text-white">회원가입</h1>
         
         <div className="relative mb-4">

@@ -110,7 +110,7 @@ function LoginForm() {
       />
       <video
         ref={videoRef}
-        className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-[2000ms] ${videoLoaded ? 'opacity-100' : 'opacity-50'}`}
         src="bg.mp4"
         autoPlay
         loop
@@ -126,7 +126,9 @@ function LoginForm() {
           msUserSelect: 'none',
           objectFit: 'cover',
           objectPosition: 'center',
-          backgroundColor: 'transparent'
+          backgroundColor: 'transparent',
+          position: 'absolute',
+          zIndex: videoLoaded ? 1 : 0
         }}
       >
         <source src="bg.mp4" type="video/mp4" />
