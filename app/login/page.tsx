@@ -110,11 +110,24 @@ function LoginForm() {
       />
       <video
         ref={videoRef}
+        className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+        src="bg.mp4"
         autoPlay
         loop
         muted
         playsInline
-        className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+        preload="auto"
+        controlsList="nodownload nofullscreen noremoteplayback"
+        disablePictureInPicture
+        style={{
+          pointerEvents: 'none',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          msUserSelect: 'none',
+          objectFit: 'cover',
+          objectPosition: 'center',
+          backgroundColor: 'transparent'
+        }}
       >
         <source src="bg.mp4" type="video/mp4" />
       </video>

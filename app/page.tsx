@@ -51,6 +51,17 @@ export default function Home() {
         muted
         playsInline
         preload="auto"
+        controlsList="nodownload nofullscreen noremoteplayback"
+        disablePictureInPicture
+        style={{
+          pointerEvents: 'none',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          msUserSelect: 'none',
+          objectFit: 'cover',
+          objectPosition: 'center',
+          backgroundColor: 'transparent'
+        }}
       />
       <div className="absolute top-0 left-0 w-full h-full bg-black" style={{ opacity: 0.17 }}></div>
       <div className="relative z-10 text-center text-white">
