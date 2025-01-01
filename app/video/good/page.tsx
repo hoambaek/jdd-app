@@ -22,9 +22,9 @@ const VideoPage = () => {
             <video
                 id="videoPlayer"
                 style={{ width: '100%', height: 'auto' }}
-                controls
                 autoPlay
                 muted
+                playsInline
                 onEnded={handleVideoEnd}
                 ref={videoRef}
             >
@@ -32,39 +32,23 @@ const VideoPage = () => {
                 브라우저가 비디오 태그를 지원하지 않습니다.
             </video>
             {showReplayButton && (
-                <>
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <span role="img" aria-label="thumbs up" style={{ fontSize: '72px' }}>👍</span>
-                    </div>
+                <div style={{ position: 'absolute', bottom: '20%', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
                     <button
                         onClick={handleReplay}
                         style={{
-                            position: 'absolute',
-                            top: '60%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
                             padding: '10px 20px',
                             fontSize: '16px',
                             backgroundColor: 'rgba(0, 0, 0, 0.7)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '5px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            marginBottom: '10px'
                         }}
                     >
                         다시 재생
                     </button>
-                </>
+                </div>
             )}
         </div>
     );

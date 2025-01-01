@@ -22,9 +22,9 @@ const VideoPage = () => {
             <video
                 id="videoPlayer"
                 style={{ width: '100%', height: 'auto' }}
-                controls
                 autoPlay
                 muted
+                playsInline
                 onEnded={handleVideoEnd}
                 ref={videoRef}
             >
