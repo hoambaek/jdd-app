@@ -24,7 +24,7 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
             setSession(currentSession);
             
             if (!currentSession) {
-                router.push('/login');
+                router.push('/');
                 return;
             }
         };
@@ -35,7 +35,7 @@ export default function ClaimBadgePage({ params }: { params: { badgeId: string }
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             if (!session) {
-                router.push('/login');
+                router.push('/');
             }
         });
 
