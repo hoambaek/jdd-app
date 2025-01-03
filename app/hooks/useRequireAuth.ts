@@ -17,12 +17,12 @@ export function useRequireAuth() {
       
       if (error) {
         console.error('Error getting session:', error);
-        router.push('/login');
+        router.push('/');
         return;
       }
 
       if (!session) {
-        router.push('/login');
+        router.push('/');
       } else {
         setSession(session);
       }
@@ -36,7 +36,7 @@ export function useRequireAuth() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (!session) {
-        router.push('/login');
+        router.push('/');
       }
     });
 
