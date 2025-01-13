@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { useRouter } from 'next/navigation';
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+import { useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
+import type { Database } from "@/types/supabase";
 
 export default function AdminLogin() {
   const router = useRouter();
+  const supabase = createClientComponentClient<Database>();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -15,37 +16,53 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLoading) return;
+    
+    try {
+      setIsLoading(true);
 
-    const { data: { user }, error } = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
-    });
+      // 로그인 시도
+      const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
-    if (error) {
-      alert("로그인 중 오류가 발생했습니다: " + error.message);
-      return;
+      if (signInError) {
+        throw signInError;
+      }
+
+      if (!user) {
+        throw new Error("로그인에 실패했습니다.");
+      }
+
+      // 사용자 역할 확인 (별도의 요청으로 분리)
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      if (profileData.role !== 'admin') {
+        await supabase.auth.signOut();
+        throw new Error("관리자 권한이 없습니다.");
+      }
+
+      router.push('/admin');
+      
+    } catch (error) {
+      let message = "로그인 중 오류가 발생했습니다.";
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      alert(message);
+    } finally {
+      setIsLoading(false);
     }
-
-    // 로그인 후 해당 사용자가 관리자인지 확인
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user?.id)
-      .single();
-
-    if (profileError) {
-      alert("사용자 정보를 확인하는 중 오류가 발생했습니다.");
-      return;
-    }
-
-    if (profileData.role !== 'admin') {
-      alert("관리자 권한이 없습니다.");
-      await supabase.auth.signOut();
-      return;
-    }
-
-    alert("관리자로 로그인되었습니다!");
-    router.push('/admin');
   };
 
   return (
@@ -63,6 +80,7 @@ export default function AdminLogin() {
               className="w-full p-2 border rounded"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
+              disabled={isLoading}
             />
           </div>
 
@@ -76,14 +94,16 @@ export default function AdminLogin() {
               className="w-full p-2 border rounded"
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
+              disabled={isLoading}
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
+            disabled={isLoading}
           >
-            관리자 로그인
+            {isLoading ? "로그인 중..." : "관리자 로그인"}
           </button>
         </form>
       </div>
