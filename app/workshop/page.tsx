@@ -214,8 +214,8 @@ const WorkshopPage = () => {
               
               <div className="p-6">
                 <div className="flex flex-col mb-4">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    <pre>{workshop.title}</pre>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2 tracking-[-0.01em] whitespace-pre-wrap">
+                    {workshop.title}
                   </h2>
                   <div className="flex items-center">
                     <svg 
