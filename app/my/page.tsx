@@ -281,10 +281,34 @@ export default function MyPage() {
               >
                 피드 관리
               </button>
+              <button
+                onClick={() => router.push('/admin/workshop')}
+                className="w-full bg-gradient-to-r from-pink-600 to-rose-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                워크샵 관리
+              </button>
+              <button
+                onClick={() => router.push('/admin/workshop-participants')}
+                className="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                워크샵 참가자 관리
+              </button>
+              <button
+                onClick={() => router.push('/admin/badge-status')}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                학생배지현황
+              </button>
+              <button
+                onClick={() => router.push('/admin/badge-manager')}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                배지 관리
+              </button>
             </>
           )}
-          {/* 선생님이면 워크샵 참가자 관리와 학생배지현황 버튼 표시 */}
-          {userData?.grade === '선생님' && (
+          {/* 선생님이지만 관리자가 아닌 경우 */}
+          {!isAdmin && userData?.grade === '선생님' && (
             <>
               <button
                 onClick={() => router.push('/admin/workshop-participants')}
