@@ -291,6 +291,12 @@ export default function MyPage() {
           >
             스토리 관리
           </button>
+          <button
+            onClick={() => router.push('/admin/workshop')}
+            className="w-full bg-gradient-to-r from-teal-600 to-green-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+          >
+            워크샵 관리
+          </button>
         </div>
       )}
 
