@@ -7,6 +7,7 @@ import Image from 'next/image';
 import BottomNav from '../components/BottomNav';
 import { useRequireAuth } from '../hooks/useRequireAuth';
 import type { Database } from '@/types/supabase';
+import { CalendarIcon } from '@radix-ui/react-icons';
 
 interface Workshop {
   id: string;
@@ -16,6 +17,7 @@ interface Workshop {
   content: string;
   image_url: string;
   url: string;
+  embed_code: string;
 }
 
 const WorkshopPage = () => {
@@ -243,6 +245,28 @@ const WorkshopPage = () => {
                 </p>
 
                 <div className="space-y-3">
+                  {workshop.embed_code && (
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => window.open(workshop.embed_code, '_blank')}
+                        className="w-1/2 py-2 rounded-xl font-medium transition-all duration-300 bg-purple-50 text-purple-600 hover:bg-purple-100 mb-3"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className="h-5 w-5" 
+                            viewBox="0 0 20 20" 
+                            fill="currentColor"
+                          >
+                            <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                            <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                          </svg>
+                          워크샵 샘플 보기
+                        </div>
+                      </button>
+                    </div>
+                  )}
+
                   <button
                     onClick={() => handleParticipate(workshop.id)}
                     disabled={participations[workshop.id]}

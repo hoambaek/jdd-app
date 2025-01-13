@@ -18,6 +18,7 @@ interface Workshop {
   date: string;
   image_url: string;
   url: string;
+  embed_code: string;
 }
 
 const WorkshopManager = () => {
@@ -81,6 +82,7 @@ const WorkshopManager = () => {
     const [time, setTime] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [url, setUrl] = useState('');
+    const [embed_code, setEmbedCode] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
@@ -121,7 +123,8 @@ const WorkshopManager = () => {
               content,
               date: dateTimeString,
               image_url: publicUrl,
-              url: url
+              url: url,
+              embed_code: embed_code
             }
           ]);
 
@@ -178,6 +181,18 @@ const WorkshopManager = () => {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              제링크 (선택사항)
+            </label>
+            <textarea
+              className="w-full p-2 border rounded-md"
+              rows={4}
+              value={embed_code}
+              onChange={(e) => setEmbedCode(e.target.value)}
+              placeholder="URL을 입력하세요"
+            />
+          </div>
           <ButtonGroup>
             <Button 
               onClick={handleSubmit}
@@ -200,6 +215,7 @@ const WorkshopManager = () => {
     const [time, setTime] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [url, setUrl] = useState(editingWorkshop?.url || '');
+    const [embed_code, setEmbedCode] = useState(editingWorkshop?.embed_code || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // 초기값 설정을 위한 useEffect
@@ -233,7 +249,8 @@ const WorkshopManager = () => {
             content,
             date: dateTimeString,
             image_url: imageUrl,
-            url: url
+            url: url,
+            embed_code: embed_code
           })
           .eq('id', editingWorkshop?.id);
 
@@ -297,6 +314,18 @@ const WorkshopManager = () => {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              예제링크 (선택사항)
+            </label>
+            <textarea
+              className="w-full p-2 border rounded-md"
+              rows={4}
+              value={embed_code}
+              onChange={(e) => setEmbedCode(e.target.value)}
+              placeholder="URL을 입력하세요"
+            />
+          </div>
           <ButtonGroup>
             <Button 
               onClick={handleSubmit}
