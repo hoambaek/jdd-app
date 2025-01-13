@@ -270,33 +270,52 @@ export default function MyPage() {
         </div>
       )}
 
-      {/* Admin 버튼 */}
-      {isAdmin && (
+      {/* Admin 버튼과 선생님 버튼 */}
+      {(isAdmin || userData?.grade === '선생님') && (
         <div className="mt-6 space-y-3">
-          <button
-            onClick={() => router.push('/admin/feed')}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
-          >
-            피드 관리
-          </button>
-          <button
-            onClick={() => router.push('/admin/badge-manager')}
-            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
-          >
-            배지 관리
-          </button>
-          <button
-            onClick={() => router.push('/admin/storymod')}
-            className="w-full bg-gradient-to-r from-cyan-600 to-teal-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
-          >
-            스토리 관리
-          </button>
-          <button
-            onClick={() => router.push('/admin/workshop')}
-            className="w-full bg-gradient-to-r from-teal-600 to-green-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
-          >
-            워크샵 관리
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => router.push('/admin/feed')}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                피드 관리
+              </button>
+              <button
+                onClick={() => router.push('/admin/badge-manager')}
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                배지 관리
+              </button>
+              <button
+                onClick={() => router.push('/admin/storymod')}
+                className="w-full bg-gradient-to-r from-cyan-600 to-teal-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                스토리 관리
+              </button>
+              <button
+                onClick={() => router.push('/admin/workshop')}
+                className="w-full bg-gradient-to-r from-teal-600 to-green-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                워크샵 관리
+              </button>
+              <button
+                onClick={() => router.push('/admin/badge-status')}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                학생 배지 현황
+              </button>
+            </>
+          )}
+          {/* 선생님이면 워크샵 참가자 관리 버튼 표시 */}
+          {userData?.grade === '선생님' && (
+            <button
+              onClick={() => router.push('/admin/workshop-participants')}
+              className="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+            >
+              워크샵 참가자 관리
+            </button>
+          )}
         </div>
       )}
 
