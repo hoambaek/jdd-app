@@ -145,8 +145,7 @@ const WorkshopManager = () => {
       <Modal>
         <ModalContent>
           <h2>새 워크샵 추가</h2>
-          <Input
-            type="text"
+          <TextArea
             placeholder="제목"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -271,8 +270,7 @@ const WorkshopManager = () => {
       <Modal>
         <ModalContent>
           <h2>워크샵 수정</h2>
-          <Input
-            type="text"
+          <TextArea
             placeholder="제목"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
