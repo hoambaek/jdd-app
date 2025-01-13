@@ -78,15 +78,18 @@ const WorkshopManager = () => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [date, setDate] = useState('');
+    const [time, setTime] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [url, setUrl] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
-      if (!title || !content || !date || !image) {
+      if (!title || !content || !date || !time || !image) {
         alert('모든 필드를 입력해주세요.');
         return;
       }
+
+      const dateTimeString = `${date}T${time}:00`;
 
       setIsSubmitting(true);
       try {
@@ -116,7 +119,7 @@ const WorkshopManager = () => {
             {
               title,
               content,
-              date,
+              date: dateTimeString,
               image_url: publicUrl,
               url: url
             }
@@ -150,11 +153,18 @@ const WorkshopManager = () => {
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
-          <Input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <div className="flex gap-4">
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            <Input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
+          </div>
           <ImageUpload>
             <input
               type="file"
@@ -186,16 +196,28 @@ const WorkshopManager = () => {
   const EditWorkshopModal = () => {
     const [title, setTitle] = useState(editingWorkshop?.title || '');
     const [content, setContent] = useState(editingWorkshop?.content || '');
-    const [date, setDate] = useState(editingWorkshop?.date || '');
+    const [date, setDate] = useState('');
+    const [time, setTime] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [url, setUrl] = useState(editingWorkshop?.url || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // 초기값 설정을 위한 useEffect
+    useEffect(() => {
+      if (editingWorkshop?.date) {
+        const dateObj = new Date(editingWorkshop.date);
+        setDate(dateObj.toISOString().split('T')[0]);
+        setTime(dateObj.toTimeString().slice(0, 5));
+      }
+    }, [editingWorkshop]);
+
     const handleSubmit = async () => {
-      if (!title || !content || !date) {
+      if (!title || !content || !date || !time) {
         alert('필수 필드를 모두 입력해주세요.');
         return;
       }
+
+      const dateTimeString = `${date}T${time}:00`;
 
       setIsSubmitting(true);
       try {
@@ -209,7 +231,7 @@ const WorkshopManager = () => {
           .update({
             title,
             content,
-            date,
+            date: dateTimeString,
             image_url: imageUrl,
             url: url
           })
@@ -243,11 +265,18 @@ const WorkshopManager = () => {
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
-          <Input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <div className="flex gap-4">
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            <Input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
+          </div>
           <ImageUpload>
             <input
               type="file"
@@ -322,9 +351,27 @@ const WorkshopManager = () => {
               <img src={workshop.image_url} alt={workshop.title} />
             </WorkshopImage>
             <WorkshopInfo>
-              <h3>{workshop.title}</h3>
-              <p>{workshop.date}</p>
-              <p>{workshop.content}</p>
+              <h3 className="text-xl font-semibold mb-2">{workshop.title}</h3>
+              <div className="flex items-center text-gray-600 mb-4">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-5 w-5 mr-2" 
+                  viewBox="0 0 20 20" 
+                  fill="currentColor"
+                >
+                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                </svg>
+                <span>
+                  {new Date(workshop.date).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })} {new Date(workshop.date).toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
               <ButtonGroup>
                 <Button onClick={() => {
                   setEditingWorkshop(workshop);
@@ -388,11 +435,17 @@ const WorkshopItem = styled.div`
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
 `;
 
 const WorkshopImage = styled.div`
-  width: 200px;
+  width: 150px;
   height: 150px;
+  flex-shrink: 0;
   
   img {
     width: 100%;
@@ -404,14 +457,13 @@ const WorkshopImage = styled.div`
 
 const WorkshopInfo = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   
   h3 {
-    margin: 0 0 10px 0;
-  }
-  
-  p {
-    margin: 5px 0;
-    color: #666;
+    margin: 0;
+    line-height: 1.4;
   }
 `;
 
@@ -482,4 +534,4 @@ const Button = styled.button`
   }
 `;
 
-export default WorkshopManager; 
+export default WorkshopManager;
