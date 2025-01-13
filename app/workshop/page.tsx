@@ -134,6 +134,23 @@ const WorkshopPage = () => {
     if (!session?.user?.id) return;
 
     try {
+      // 먼저 이미 출석했는지 확인
+      const { data: existingAttendance, error: checkError } = await supabase
+        .from('workshop_attendance')
+        .select('*')
+        .eq('workshop_id', workshopId)
+        .eq('user_id', session.user.id)
+        .single();
+
+      // 이미 출석한 경우 바로 URL로 이동
+      if (existingAttendance) {
+        if (url) {
+          window.location.href = url;
+        }
+        return;
+      }
+
+      // 출석하지 않은 경우 출석 기록 추가
       const { error: attendanceError } = await supabase
         .from('workshop_attendance')
         .insert([

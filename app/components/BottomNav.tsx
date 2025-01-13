@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, Book, Award, User } from 'lucide-react';
+import { LayoutGrid, CalendarCheck, Award, User } from 'lucide-react';
 import styles from './BottomNav.module.css';
 
 export default function BottomNav() {
@@ -15,9 +15,9 @@ export default function BottomNav() {
       label: 'Activity'
     },
     {
-      href: '/story',
-      icon: <Book size={24} />,
-      label: 'Story'
+      href: '/workshop',
+      icon: <CalendarCheck size={24} />,
+      label: 'Workshop'
     },
     {
       href: '/badges',
