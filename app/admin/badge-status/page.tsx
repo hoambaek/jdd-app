@@ -163,7 +163,7 @@ const BadgeStatusPage = () => {
   return (
     <Container>
       <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 mb-8">
-        학생 배지 현황
+        학생 출석 현황
       </h1>
 
       <div className="mb-6">
