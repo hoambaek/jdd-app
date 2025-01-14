@@ -234,7 +234,7 @@ const BadgeStatusPage = () => {
                 {['W1', 'W2', 'W3', 'W4', 'S1', 'S2'].map((week) => (
                   <td key={week} className="px-2 py-4 text-center">
                     {userBadge.badges[`${selectedMonth}-${week}`] ? (
-                      <span className="inline-flex items-center justify-center w-5 h-5 bg-green-100 text-green-800 rounded-full">
+                      <span className="inline-flex items-center justify-center w-5 h-5 bg-green-600 text-white rounded-full">
                         ✓
                       </span>
                     ) : (
