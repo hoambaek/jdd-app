@@ -513,6 +513,28 @@ const ModalContent = styled.div`
   border-radius: 10px;
   width: 90%;
   max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: 20px 0;
+  padding-bottom: 100px;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 `;
 
 const Input = styled.input`
@@ -541,6 +563,7 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 10px;
   margin-top: 20px;
+  margin-bottom: 40px;
 `;
 
 const Button = styled.button`
