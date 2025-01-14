@@ -52,6 +52,15 @@ const nextConfig = {
     }
     return config;
   },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/activity',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig 

@@ -26,6 +26,17 @@ export default function Home() {
   const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/activity');
+      }
+    };
+    
+    checkSession();
+  }, [router]);
+
+  useEffect(() => {
     if (videoRef.current) {
       videoRef.current.oncanplaythrough = () => {
         setVideoLoaded(true);
