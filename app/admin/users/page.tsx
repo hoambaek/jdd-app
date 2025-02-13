@@ -49,17 +49,17 @@ export default function UserManagementPage() {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error || !user) {
-          router.push('/login');
+        if (sessionError || !session) {
+          router.push('/admin/login');
           return;
         }
 
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('is_admin')
-          .eq('id', user.id)
+          .eq('id', session.user.id)
           .single();
 
         if (profileError || !profile?.is_admin) {
@@ -68,7 +68,7 @@ export default function UserManagementPage() {
         }
       } catch (error) {
         console.error('Admin check error:', error);
-        router.push('/');
+        router.push('/admin/login');
       }
     };
 
@@ -83,6 +83,7 @@ export default function UserManagementPage() {
     }
 
     try {
+      setLoading(true);
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: {
@@ -107,6 +108,8 @@ export default function UserManagementPage() {
     } catch (error) {
       console.error('이메일 변경 오류:', error);
       setMessage(error instanceof Error ? error.message : '이메일 변경에 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,6 +121,7 @@ export default function UserManagementPage() {
     }
 
     try {
+      setLoading(true);
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: {
@@ -142,6 +146,8 @@ export default function UserManagementPage() {
     } catch (error) {
       console.error('비밀번호 변경 오류:', error);
       setMessage(error instanceof Error ? error.message : '비밀번호 변경에 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
