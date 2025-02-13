@@ -23,36 +23,16 @@ export default function UserManagementPage() {
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
 
-  // 사용자 목록 불러오기
+  // 관리자 권한 체크와 사용자 목록 불러오기를 하나의 useEffect로 통합
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const { data: profiles, error } = await supabase
-          .from('profiles')
-          .select('id, email, name, baptismal_name, grade')
-          .order('name');
+    let isSubscribed = true;  // cleanup을 위한 flag
 
-        if (error) throw error;
-        setUsers(profiles);
-      } catch (error) {
-        console.error('사용자 목록 조회 오류:', error);
-        setMessage('사용자 목록을 불러오는데 실패했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, [supabase]);
-
-  // 관리자 권한 체크
-  useEffect(() => {
-    const checkAdminStatus = async () => {
+    const initializeAdminPage = async () => {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError || !session) {
-          router.push('/admin/login');
+          router.replace('/admin/login');  // push 대신 replace 사용
           return;
         }
 
@@ -63,21 +43,38 @@ export default function UserManagementPage() {
           .single();
 
         if (profileError || !profile?.is_admin) {
-          router.push('/');
+          router.replace('/');  // push 대신 replace 사용
           return;
         }
+
+        // 관리자 확인 후 사용자 목록 불러오기
+        if (isSubscribed) {  // 컴포넌트가 마운트된 상태일 때만 상태 업데이트
+          const { data: profiles, error } = await supabase
+            .from('profiles')
+            .select('id, email, name, baptismal_name, grade')
+            .order('name');
+
+          if (error) throw error;
+          setUsers(profiles);
+          setLoading(false);
+        }
       } catch (error) {
-        console.error('Admin check error:', error);
-        router.push('/admin/login');
+        console.error('Admin page initialization error:', error);
+        router.replace('/admin/login');
       }
     };
 
-    checkAdminStatus();
-  }, [router, supabase]);
+    initializeAdminPage();
+
+    // Cleanup function
+    return () => {
+      isSubscribed = false;
+    };
+  }, [router, supabase]);  // 의존성 배열 최소화
 
   // 이메일 변경 처리
   const handleEmailUpdate = async () => {
-    if (!selectedUser || !newEmail) {
+    if (!selectedUser || !newEmail || loading) {  // loading 체크 추가
       setMessage('사용자와 새 이메일을 선택해주세요.');
       return;
     }
@@ -115,7 +112,7 @@ export default function UserManagementPage() {
 
   // 비밀번호 변경 처리
   const handlePasswordUpdate = async () => {
-    if (!selectedUser || !newPassword) {
+    if (!selectedUser || !newPassword || loading) {  // loading 체크 추가
       setMessage('사용자와 새 비밀번호를 선택해주세요.');
       return;
     }
