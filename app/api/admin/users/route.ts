@@ -8,72 +8,94 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { userId, action, value } = body;
+
+    // 1. 환경 변수 유효성 검사
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
+        !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+        !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Supabase 환경 변수가 설정되지 않았습니다.');
+    }
+
+    // 2. 일반 클라이언트 초기화 (관리자 체크용)
+    const regularClient = createRouteHandlerClient<Database>(
+      { cookies },
+      {
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      }
+    );
+
+    // 3. 관리자 권한 확인
+    const { data: { user }, error: authError } = await regularClient.auth.getUser();
     
-    // 일반 클라이언트로 관리자 체크
-    const regularClient = createRouteHandlerClient<Database>({ 
-      cookies,
-    }, {
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    });
-
-    // 요청하는 사용자가 관리자인지 확인
-    const {
-      data: { user: adminUser },
-    } = await regularClient.auth.getUser();
-
-    if (!adminUser) {
+    if (authError || !user) {
       return NextResponse.json(
-        { error: '인증되지 않은 사용자입니다.' },
+        { error: '인증 필요' },
         { status: 401 }
       );
     }
 
-    const { data: adminProfile } = await regularClient
+    const { data: profile, error: profileError } = await regularClient
       .from('profiles')
       .select('is_admin')
-      .eq('id', adminUser.id)
+      .eq('id', user.id)
       .single();
 
-    if (!adminProfile?.is_admin) {
+    if (profileError || !profile?.is_admin) {
       return NextResponse.json(
-        { error: '관리자 권한이 없습니다.' },
+        { error: '권한 없음' },
         { status: 403 }
       );
     }
 
-    // service_role 클라이언트 생성
-    const supabase = createClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    // 4. 서비스 역할 클라이언트 생성
+    const serviceRoleClient = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
       {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
+          persistSession: false,
+          detectSessionInUrl: false
         }
       }
     );
 
-    // 이메일 또는 비밀번호 업데이트
+    // 5. 사용자 업데이트 작업 수행
+    let updateResult;
     if (action === 'updateEmail') {
-      const { error } = await supabase.auth.admin.updateUserById(
+      updateResult = await serviceRoleClient.auth.admin.updateUserById(
         userId,
         { email: value }
       );
-      if (error) throw error;
     } else if (action === 'updatePassword') {
-      const { error } = await supabase.auth.admin.updateUserById(
+      updateResult = await serviceRoleClient.auth.admin.updateUserById(
         userId,
         { password: value }
       );
-      if (error) throw error;
+    } else {
+      return NextResponse.json(
+        { error: '유효하지 않은 작업' },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ success: true });
+    if (updateResult.error) {
+      throw updateResult.error;
+    }
+
+    return NextResponse.json({ 
+      success: true,
+      message: '성공적으로 업데이트되었습니다' 
+    });
+
   } catch (error: any) {
-    console.error('Error in user update:', error);
+    console.error('관리자 업데이트 오류:', error);
     return NextResponse.json(
-      { error: error.message },
+      { 
+        error: error.message || '서버 오류 발생',
+        details: error instanceof Error ? error.stack : null
+      },
       { status: 500 }
     );
   }
