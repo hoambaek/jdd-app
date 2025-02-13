@@ -1,4 +1,5 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -7,17 +8,13 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { userId, action, value } = body;
     
-    const supabase = createRouteHandlerClient(
-      { cookies },
-      {
-        supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-      }
-    );
+    // 일반 클라이언트로 관리자 체크
+    const regularClient = createRouteHandlerClient({ cookies });
 
     // 요청하는 사용자가 관리자인지 확인
     const {
       data: { user: adminUser },
-    } = await supabase.auth.getUser();
+    } = await regularClient.auth.getUser();
 
     if (!adminUser) {
       return NextResponse.json(
@@ -26,7 +23,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: adminProfile } = await supabase
+    const { data: adminProfile } = await regularClient
       .from('profiles')
       .select('is_admin')
       .eq('id', adminUser.id)
@@ -38,6 +35,18 @@ export async function POST(request: Request) {
         { status: 403 }
       );
     }
+
+    // service_role 클라이언트 생성
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
 
     // 이메일 또는 비밀번호 업데이트
     if (action === 'updateEmail') {
