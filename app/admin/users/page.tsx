@@ -120,7 +120,7 @@ export default function UserManagementPage() {
 
   // 비밀번호 변경 처리
   const handlePasswordUpdate = async () => {
-    if (!selectedUser || !newPassword || loading) {  // loading 체크 추가
+    if (!selectedUser || !newPassword || loading) {
       setMessage('사용자와 새 비밀번호를 선택해주세요.');
       return;
     }
@@ -145,9 +145,20 @@ export default function UserManagementPage() {
         throw new Error(data.error || '비밀번호 변경에 실패했습니다.');
       }
 
-      setMessage('비밀번호가 성공적으로 변경되었습니다.');
+      setMessage(data.message);
       setNewPassword('');
       setSelectedUser(null);
+
+      // 사용자 목록 새로고침
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, email, name, baptismal_name, grade')
+        .order('name');
+
+      if (!error && profiles) {
+        setUsers(profiles);
+      }
+
     } catch (error) {
       console.error('비밀번호 변경 오류:', error);
       setMessage(error instanceof Error ? error.message : '비밀번호 변경에 실패했습니다.');

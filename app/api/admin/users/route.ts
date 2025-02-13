@@ -64,8 +64,27 @@ export async function POST(request: Request) {
     } else if (action === 'updatePassword') {
       updateResult = await adminClient.auth.admin.updateUserById(
         userId,
-        { password: value }
+        { 
+          password: value,
+          email_confirm: true // 이메일 확인 상태 유지
+        }
       );
+
+      // 비밀번호 변경 후 추가 검증
+      if (!updateResult.error) {
+        // 프로필 테이블의 last_password_update 필드 업데이트 (선택사항)
+        const { error: profileUpdateError } = await adminClient
+          .from('profiles')
+          .update({ 
+            last_password_update: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+
+        if (profileUpdateError) {
+          console.error('Profile update error:', profileUpdateError);
+        }
+      }
     } else {
       return NextResponse.json(
         { error: '유효하지 않은 작업' },
@@ -78,10 +97,17 @@ export async function POST(request: Request) {
       throw updateResult.error;
     }
 
+    // 성공 응답에 더 자세한 정보 포함
     return NextResponse.json({ 
       success: true,
-      message: '성공적으로 업데이트되었습니다',
-      data: updateResult.data
+      message: action === 'updatePassword' ? 
+        '비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 다시 로그인해주세요.' : 
+        '이메일이 성공적으로 변경되었습니다.',
+      data: {
+        userId,
+        action,
+        timestamp: new Date().toISOString()
+      }
     });
 
   } catch (error: any) {
@@ -89,9 +115,10 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { 
         error: error.message || '서버 오류 발생',
-        details: error instanceof Error ? error.stack : null
+        details: error instanceof Error ? error.stack : null,
+        errorCode: error.code || 'UNKNOWN_ERROR'
       },
-      { status: 500 }
+      { status: error.status || 500 }
     );
   }
 } 
