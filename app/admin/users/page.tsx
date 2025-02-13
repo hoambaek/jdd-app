@@ -20,19 +20,18 @@ export default function UserManagementPage() {
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [sessionChecked, setSessionChecked] = useState(false);
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
 
-  // 관리자 권한 체크와 사용자 목록 불러오기를 하나의 useEffect로 통합
+  // 세션 체크와 관리자 권한 확인을 위한 useEffect
   useEffect(() => {
-    let isSubscribed = true;  // cleanup을 위한 flag
-
-    const initializeAdminPage = async () => {
+    const checkAuth = async () => {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError || !session) {
-          router.replace('/admin/login');  // push 대신 replace 사용
+          router.replace('/admin/login');
           return;
         }
 
@@ -43,34 +42,43 @@ export default function UserManagementPage() {
           .single();
 
         if (profileError || !profile?.is_admin) {
-          router.replace('/');  // push 대신 replace 사용
+          router.replace('/');
           return;
         }
 
-        // 관리자 확인 후 사용자 목록 불러오기
-        if (isSubscribed) {  // 컴포넌트가 마운트된 상태일 때만 상태 업데이트
-          const { data: profiles, error } = await supabase
-            .from('profiles')
-            .select('id, email, name, baptismal_name, grade')
-            .order('name');
-
-          if (error) throw error;
-          setUsers(profiles);
-          setLoading(false);
-        }
+        setSessionChecked(true);
       } catch (error) {
-        console.error('Admin page initialization error:', error);
+        console.error('Auth check error:', error);
         router.replace('/admin/login');
       }
     };
 
-    initializeAdminPage();
+    checkAuth();
+  }, []); // 의존성 배열을 비워서 최초 1회만 실행
 
-    // Cleanup function
-    return () => {
-      isSubscribed = false;
+  // 사용자 목록 불러오기를 위한 별도의 useEffect
+  useEffect(() => {
+    if (!sessionChecked) return; // 세션 체크가 완료된 후에만 실행
+
+    const fetchUsers = async () => {
+      try {
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('id, email, name, baptismal_name, grade')
+          .order('name');
+
+        if (error) throw error;
+        setUsers(profiles);
+      } catch (error) {
+        console.error('사용자 목록 조회 오류:', error);
+        setMessage('사용자 목록을 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
     };
-  }, [router, supabase]);  // 의존성 배열 최소화
+
+    fetchUsers();
+  }, [sessionChecked, supabase]); // sessionChecked가 true일 때만 실행
 
   // 이메일 변경 처리
   const handleEmailUpdate = async () => {
