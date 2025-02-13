@@ -333,6 +333,22 @@ export default function MyPage() {
         </div>
       )}
 
+      {/* 관리자 전용 섹션 */}
+      {userData?.is_admin && (
+        <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+          <h2 className="text-xl font-bold mb-4">관리자 메뉴</h2>
+          <div className="space-y-2">
+            <button
+              onClick={() => router.push('/admin/users')}
+              className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+            >
+              사용자 관리
+            </button>
+            {/* 필요한 경우 다른 관리자 메뉴 버튼들 추가 */}
+          </div>
+        </div>
+      )}
+
       {/* 로그아웃 버튼 */}
       <div className="mt-6 mb-6">
         <button
