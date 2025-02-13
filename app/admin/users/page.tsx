@@ -127,7 +127,6 @@ export default function UserManagementPage() {
           userId: selectedUser.id,
           action: 'updatePassword',
           value: newPassword,
-          adminSession: (await supabase.auth.getSession()).data.session?.access_token
         }),
       });
 
