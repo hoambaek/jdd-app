@@ -4,7 +4,8 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { Database } from '@/types/supabase';
 
-const supabase = createClient(
+// 서비스 롤 클라이언트 생성
+const adminClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   {
@@ -28,13 +29,7 @@ export async function POST(request: Request) {
     }
 
     // 2. 일반 클라이언트 초기화 (관리자 체크용)
-    const regularClient = createRouteHandlerClient<Database>(
-      { cookies },
-      {
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      }
-    );
+    const regularClient = createRouteHandlerClient<Database>({ cookies });
 
     // 3. 관리자 권한 확인
     const { data: { user }, error: authError } = await regularClient.auth.getUser();
@@ -62,12 +57,12 @@ export async function POST(request: Request) {
     // 4. 사용자 업데이트 작업 수행
     let updateResult;
     if (action === 'updateEmail') {
-      updateResult = await supabase.auth.admin.updateUserById(
+      updateResult = await adminClient.auth.admin.updateUserById(
         userId,
         { email: value }
       );
     } else if (action === 'updatePassword') {
-      updateResult = await supabase.auth.admin.updateUserById(
+      updateResult = await adminClient.auth.admin.updateUserById(
         userId,
         { password: value }
       );
@@ -79,12 +74,14 @@ export async function POST(request: Request) {
     }
 
     if (updateResult.error) {
+      console.error('Update error:', updateResult.error);
       throw updateResult.error;
     }
 
     return NextResponse.json({ 
       success: true,
-      message: '성공적으로 업데이트되었습니다' 
+      message: '성공적으로 업데이트되었습니다',
+      data: updateResult.data
     });
 
   } catch (error: any) {
