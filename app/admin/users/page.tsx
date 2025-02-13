@@ -125,6 +125,12 @@ export default function UserManagementPage() {
       return;
     }
 
+    // 비밀번호 유효성 검사 추가
+    if (newPassword.length < 6) {
+      setMessage('비밀번호는 최소 6자 이상이어야 합니다.');
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch('/api/admin/users', {

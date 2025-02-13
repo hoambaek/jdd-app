@@ -62,17 +62,30 @@ export async function POST(request: Request) {
         { email: value }
       );
     } else if (action === 'updatePassword') {
+      // 비밀번호 변경 로직 수정
+      const { data: userData, error: userError } = await adminClient
+        .auth.admin.getUserById(userId);
+
+      if (userError) {
+        throw userError;
+      }
+
       updateResult = await adminClient.auth.admin.updateUserById(
         userId,
         { 
           password: value,
-          email_confirm: true // 이메일 확인 상태 유지
+          email: userData.user.email, // 현재 이메일 유지
+          email_confirm: true,
+          user_metadata: userData.user.user_metadata, // 기존 메타데이터 유지
+          app_metadata: userData.user.app_metadata // 기존 메타데이터 유지
         }
       );
 
-      // 비밀번호 변경 후 추가 검증
       if (!updateResult.error) {
-        // 프로필 테이블의 last_password_update 필드 업데이트 (선택사항)
+        // 사용자 세션 무효화 (선택사항)
+        await adminClient.auth.admin.signOut(userId);
+
+        // 프로필 테이블 업데이트
         const { error: profileUpdateError } = await adminClient
           .from('profiles')
           .update({ 
@@ -97,7 +110,6 @@ export async function POST(request: Request) {
       throw updateResult.error;
     }
 
-    // 성공 응답에 더 자세한 정보 포함
     return NextResponse.json({ 
       success: true,
       message: action === 'updatePassword' ? 
