@@ -128,7 +128,13 @@ export async function POST(request: Request) {
       // 사용자 세션 무효화
       if (!updateResult.error) {
         try {
-          await adminClient.auth.admin.signOut(userId);
+          // 다른 방식으로 세션 무효화 시도
+          const { error: revokeError } = await adminClient.auth.admin.revokeSessionsForUser(userId);
+          
+          if (revokeError) {
+            console.log('세션 무효화 오류:', revokeError);
+            // 오류가 있어도 계속 진행
+          }
           
           // 프로필 테이블 업데이트 (있다면)
           try {
@@ -142,9 +148,9 @@ export async function POST(request: Request) {
             console.log('프로필 업데이트 오류:', profileError);
             // 프로필 업데이트 실패는 무시
           }
-        } catch (signOutError) {
-          console.log('로그아웃 오류:', signOutError);
-          // 로그아웃 실패는 무시
+        } catch (error) {
+          console.log('로그아웃/세션 관리 오류:', error);
+          // 오류가 있어도 계속 진행
         }
       }
     } else {
