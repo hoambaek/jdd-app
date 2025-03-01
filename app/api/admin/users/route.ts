@@ -63,49 +63,44 @@ export async function POST(request: Request) {
         { email: value }
       );
     } else if (action === 'updatePassword') {
-      // 1. 사용자 정보 가져오기
-      const { data: userData, error: userError } = await adminClient
-        .auth.admin.getUserById(userId);
-
-      if (userError) throw userError;
-
-      // 2. 직접 Auth API 호출하여 비밀번호 변경
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`
-        },
-        body: JSON.stringify({
-          password: value,
-          email_confirm: true
-        })
-      });
-
-      if (!response.ok) {
-        const responseText = await response.text();
-        console.error('비밀번호 변경 오류 응답:', responseText);
-        throw new Error(`비밀번호 변경 실패: ${response.status} ${response.statusText}`);
-      }
-
-      console.log('비밀번호 변경 성공:', userId);
-      
-      // 3. 프로필 테이블 업데이트
       try {
-        await adminClient
-          .from('profiles')
-          .update({ 
-            updated_at: new Date().toISOString(),
-            last_password_update: new Date().toISOString()
-          })
-          .eq('id', userId);
-      } catch (profileError) {
-        console.log('프로필 업데이트 오류:', profileError);
-        // 프로필 업데이트 실패는 무시
+        // 사용자 정보 가져오기
+        const { data: userData, error: userError } = await adminClient
+          .auth.admin.getUserById(userId);
+
+        if (userError) throw userError;
+
+        // 비밀번호만 업데이트하는 최소한의 API 호출
+        const { error: updateError } = await adminClient.auth.admin.updateUserById(
+          userId,
+          { password: value }
+        );
+
+        if (updateError) {
+          console.error('비밀번호 업데이트 오류:', updateError);
+          throw updateError;
+        }
+
+        console.log('비밀번호 변경 성공:', userId);
+
+        // 프로필 테이블 업데이트
+        try {
+          await adminClient
+            .from('profiles')
+            .update({ 
+              updated_at: new Date().toISOString(),
+              last_password_update: new Date().toISOString()
+            })
+            .eq('id', userId);
+        } catch (profileError) {
+          console.log('프로필 업데이트 오류:', profileError);
+        }
+
+        updateResult = { data: { user: userData.user }, error: null };
+      } catch (error) {
+        console.error('비밀번호 변경 처리 오류:', error);
+        throw error;
       }
-      
-      updateResult = { data: { user: userData.user }, error: null };
     } else {
       return NextResponse.json(
         { error: '유효하지 않은 작업' },
