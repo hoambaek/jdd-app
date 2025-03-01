@@ -58,7 +58,6 @@ function LoginForm() {
 
     try {
       console.log('로그인 시도:', { email: trimmedEmail });
-      setErrorMessage('로그인 중...');
       
       const { data: { session }, error } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
@@ -70,7 +69,7 @@ function LoginForm() {
       if (error) {
         console.error('로그인 에러:', error);
         if (error.message === 'Invalid login credentials') {
-          setErrorMessage('이메일 혹은 비밀번호가 틀렸습니다.');
+          setErrorMessage('비밀번호가 틀렸습니다. 다시 확인해주세요.');
         } else {
           setErrorMessage(`${error.message} (${error.status})`);
         }
