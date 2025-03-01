@@ -70,10 +70,18 @@ export async function POST(request: Request) {
 
         if (userError) throw userError;
 
-        // 비밀번호만 업데이트하는 최소한의 API 호출
+        // Supabase 공식 문서 기반 비밀번호 정책 준수
+        if (value.length < 8) {
+          throw new Error('비밀번호는 최소 8자 이상이어야 합니다.');
+        }
+
+        // 관리자 API를 통한 비밀번호 직접 업데이트
         const { error: updateError } = await adminClient.auth.admin.updateUserById(
           userId,
-          { password: value }
+          { 
+            password: value,
+            email_confirm: true  // 이메일 확인 상태 유지
+          }
         );
 
         if (updateError) {
@@ -81,7 +89,8 @@ export async function POST(request: Request) {
           throw updateError;
         }
 
-        console.log('비밀번호 변경 성공:', userId);
+        // 사용자의 모든 세션 취소 (선택사항)
+        await adminClient.auth.admin.revokeSessionsForUser(userId);
 
         // 프로필 테이블 업데이트
         try {
@@ -96,7 +105,11 @@ export async function POST(request: Request) {
           console.log('프로필 업데이트 오류:', profileError);
         }
 
-        updateResult = { data: { user: userData.user }, error: null };
+        // 추가 확인: 사용자 조회하여 변경 확인
+        const { data: updatedUserData } = await adminClient.auth.admin.getUserById(userId);
+        console.log('사용자 비밀번호 업데이트 완료:', userId);
+
+        updateResult = { data: { user: updatedUserData?.user || userData.user }, error: null };
       } catch (error) {
         console.error('비밀번호 변경 처리 오류:', error);
         throw error;
