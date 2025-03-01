@@ -63,96 +63,49 @@ export async function POST(request: Request) {
         { email: value }
       );
     } else if (action === 'updatePassword') {
-      // 비밀번호 변경 방식 1: 관리자 API 사용
+      // 1. 사용자 정보 가져오기
       const { data: userData, error: userError } = await adminClient
         .auth.admin.getUserById(userId);
 
-      if (userError) {
-        throw userError;
+      if (userError) throw userError;
+
+      // 2. 직접 Auth API 호출하여 비밀번호 변경
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`
+        },
+        body: JSON.stringify({
+          password: value,
+          email_confirm: true
+        })
+      });
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        console.error('비밀번호 변경 오류 응답:', responseText);
+        throw new Error(`비밀번호 변경 실패: ${response.status} ${response.statusText}`);
       }
 
-      // 방법 1: 관리자 API로 직접 업데이트
-      updateResult = await adminClient.auth.admin.updateUserById(
-        userId,
-        { 
-          password: value
-        }
-      );
-
-      // 업데이트가 실패하면 다른 방법 시도
-      if (updateResult.error) {
-        console.log("직접 비밀번호 변경 실패, 비밀번호 재설정 방식으로 시도합니다.");
-        
-        // 방법 2: 비밀번호 재설정 토큰을 생성하고 직접 적용
-        const { data: resetData, error: resetError } = await adminClient
-          .auth.admin.generateLink({
-            type: 'recovery',
-            email: userData.user.email,
-            options: {
-              redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`
-            }
-          });
-          
-        if (resetError) {
-          throw resetError;
-        }
-        
-        // 참고: 이 메서드는 문서화되지 않은 방식으로, Supabase가 내부적으로 사용하는 방식입니다
-        // 실제 구현은 Supabase의 내부 API를 사용하므로 향후 변경될 수 있습니다
-        if (resetData && resetData.properties && resetData.properties.hashed_token) {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/recover`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
-              'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`
-            },
-            body: JSON.stringify({
-              token: resetData.properties.token,
-              type: 'recovery',
-              password: value
-            })
-          });
-          
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`비밀번호 재설정 실패: ${errorData.message || response.statusText}`);
-          }
-          
-          updateResult = { data: { user: userData.user }, error: null };
-        } else {
-          throw new Error('비밀번호 재설정 토큰을 생성할 수 없습니다.');
-        }
+      console.log('비밀번호 변경 성공:', userId);
+      
+      // 3. 프로필 테이블 업데이트
+      try {
+        await adminClient
+          .from('profiles')
+          .update({ 
+            updated_at: new Date().toISOString(),
+            last_password_update: new Date().toISOString()
+          })
+          .eq('id', userId);
+      } catch (profileError) {
+        console.log('프로필 업데이트 오류:', profileError);
+        // 프로필 업데이트 실패는 무시
       }
-
-      // 사용자 세션 무효화
-      if (!updateResult.error) {
-        try {
-          // 다른 방식으로 세션 무효화 시도
-          const { error: revokeError } = await adminClient.auth.admin.revokeSessionsForUser(userId);
-          
-          if (revokeError) {
-            console.log('세션 무효화 오류:', revokeError);
-            // 오류가 있어도 계속 진행
-          }
-          
-          // 프로필 테이블 업데이트 (있다면)
-          try {
-            await adminClient
-              .from('profiles')
-              .update({ 
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', userId);
-          } catch (profileError) {
-            console.log('프로필 업데이트 오류:', profileError);
-            // 프로필 업데이트 실패는 무시
-          }
-        } catch (error) {
-          console.log('로그아웃/세션 관리 오류:', error);
-          // 오류가 있어도 계속 진행
-        }
-      }
+      
+      updateResult = { data: { user: userData.user }, error: null };
     } else {
       return NextResponse.json(
         { error: '유효하지 않은 작업' },
