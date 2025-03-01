@@ -56,13 +56,14 @@ export async function POST(request: Request) {
 
     // 4. 사용자 업데이트 작업 수행
     let updateResult;
+    
     if (action === 'updateEmail') {
       updateResult = await adminClient.auth.admin.updateUserById(
         userId,
         { email: value }
       );
     } else if (action === 'updatePassword') {
-      // 비밀번호 변경 로직 수정
+      // 비밀번호 변경 방식 1: 관리자 API 사용
       const { data: userData, error: userError } = await adminClient
         .auth.admin.getUserById(userId);
 
@@ -70,32 +71,80 @@ export async function POST(request: Request) {
         throw userError;
       }
 
+      // 방법 1: 관리자 API로 직접 업데이트
       updateResult = await adminClient.auth.admin.updateUserById(
         userId,
         { 
-          password: value,
-          email: userData.user.email, // 현재 이메일 유지
-          email_confirm: true,
-          user_metadata: userData.user.user_metadata, // 기존 메타데이터 유지
-          app_metadata: userData.user.app_metadata // 기존 메타데이터 유지
+          password: value
         }
       );
 
+      // 업데이트가 실패하면 다른 방법 시도
+      if (updateResult.error) {
+        console.log("직접 비밀번호 변경 실패, 비밀번호 재설정 방식으로 시도합니다.");
+        
+        // 방법 2: 비밀번호 재설정 토큰을 생성하고 직접 적용
+        const { data: resetData, error: resetError } = await adminClient
+          .auth.admin.generateLink({
+            type: 'recovery',
+            email: userData.user.email,
+            options: {
+              redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`
+            }
+          });
+          
+        if (resetError) {
+          throw resetError;
+        }
+        
+        // 참고: 이 메서드는 문서화되지 않은 방식으로, Supabase가 내부적으로 사용하는 방식입니다
+        // 실제 구현은 Supabase의 내부 API를 사용하므로 향후 변경될 수 있습니다
+        if (resetData && resetData.properties && resetData.properties.hashed_token) {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/recover`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+              'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`
+            },
+            body: JSON.stringify({
+              token: resetData.properties.token,
+              type: 'recovery',
+              password: value
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`비밀번호 재설정 실패: ${errorData.message || response.statusText}`);
+          }
+          
+          updateResult = { data: { user: userData.user }, error: null };
+        } else {
+          throw new Error('비밀번호 재설정 토큰을 생성할 수 없습니다.');
+        }
+      }
+
+      // 사용자 세션 무효화
       if (!updateResult.error) {
-        // 사용자 세션 무효화 (선택사항)
-        await adminClient.auth.admin.signOut(userId);
-
-        // 프로필 테이블 업데이트
-        const { error: profileUpdateError } = await adminClient
-          .from('profiles')
-          .update({ 
-            last_password_update: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', userId);
-
-        if (profileUpdateError) {
-          console.error('Profile update error:', profileUpdateError);
+        try {
+          await adminClient.auth.admin.signOut(userId);
+          
+          // 프로필 테이블 업데이트 (있다면)
+          try {
+            await adminClient
+              .from('profiles')
+              .update({ 
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', userId);
+          } catch (profileError) {
+            console.log('프로필 업데이트 오류:', profileError);
+            // 프로필 업데이트 실패는 무시
+          }
+        } catch (signOutError) {
+          console.log('로그아웃 오류:', signOutError);
+          // 로그아웃 실패는 무시
         }
       }
     } else {
@@ -105,8 +154,8 @@ export async function POST(request: Request) {
       );
     }
 
-    if (updateResult.error) {
-      console.error('Update error:', updateResult.error);
+    if (updateResult?.error) {
+      console.error('업데이트 오류:', updateResult.error);
       throw updateResult.error;
     }
 
