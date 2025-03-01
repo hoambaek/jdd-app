@@ -36,6 +36,21 @@ const BadgesPage = ({ badges = [] }) => {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
+  
+  // 숨길 배지 목록 정의
+  const hiddenBadges = [
+    "2-4", "2-5", "2-6", 
+    "3-5", "3-6", 
+    "4-4", "4-5", "4-6", 
+    "5-5", "5-6", 
+    "6-4", "6-5", "6-6", 
+    "7-4", "7-5", "7-6", 
+    "8-5", "8-6", 
+    "9-5", "9-6", 
+    "10-4", "10-5", "10-6", 
+    "11-5", "11-6", 
+    "12-4", "12-5", "12-6"
+  ];
 
   // 상태의 타입을 명시적으로 지정
   const [groupedBadges, setGroupedBadges] = useState<GroupedBadges>({});
@@ -76,6 +91,10 @@ const BadgesPage = ({ badges = [] }) => {
         grouped[month] = [];
         
         for (let i = 1; i <= 6; i++) {
+          // 숨길 배지인지 확인
+          const badgeId = `${month + 1}-${i}`;
+          if (hiddenBadges.includes(badgeId)) continue;
+          
           const badgeImageUrl = `https://qloytvrhkjviqyzuimio.supabase.co/storage/v1/object/public/badges/badges/${monthStr}_${monthNames[month]}/badge_0${i}.png`;
           
           const userHasBadge = userBadges.some(
@@ -83,10 +102,10 @@ const BadgesPage = ({ badges = [] }) => {
           );
 
           grouped[month].push({
-            id: `${month + 1}-${i}`,
+            id: badgeId,
             created_at: new Date().toISOString(),
             image_url: badgeImageUrl,
-            name: `${month + 1}-${i}`,
+            name: badgeId,
             acquired: userHasBadge
           });
         }
