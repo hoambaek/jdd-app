@@ -25,6 +25,33 @@ const BadgeStatusPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string>('2024-01');
   const supabase = createClientComponentClient<Database>();
+  
+  // 숨길 배지 목록 정의 (월-번호 형식)
+  const hiddenBadges = [
+    "2-4", "2-5", "2-6", 
+    "3-5", "3-6", 
+    "4-4", "4-5", "4-6", 
+    "5-5", "5-6", 
+    "6-4", "6-5", "6-6", 
+    "7-4", "7-5", "7-6", 
+    "8-5", "8-6", 
+    "9-5", "9-6", 
+    "10-4", "10-5", "10-6", 
+    "11-5", "11-6", 
+    "12-4", "12-5", "12-6"
+  ];
+  
+  // 현재 선택된 월에 표시할 컬럼 결정
+  const getVisibleColumns = (month: string) => {
+    const monthNumber = parseInt(month.split('-')[1]);
+    const defaultColumns = ['W1', 'W2', 'W3', 'W4', 'S1', 'S2'];
+    
+    return defaultColumns.filter(column => {
+      const weekNumber = column.startsWith('W') ? parseInt(column.substring(1)) : (column === 'S1' ? 5 : 6);
+      const badgeId = `${monthNumber}-${weekNumber}`;
+      return !hiddenBadges.includes(badgeId);
+    });
+  };
 
   useEffect(() => {
     fetchUserBadges();
@@ -155,6 +182,9 @@ const BadgeStatusPage = () => {
     { value: '2024-11', label: '11월' },
     { value: '2024-12', label: '12월' }
   ];
+  
+  // 현재 선택된 월에 표시할 컬럼 목록 계산
+  const visibleColumns = getVisibleColumns(selectedMonth);
 
   if (loading) {
     return <div className="p-4">로딩 중...</div>;
@@ -196,24 +226,15 @@ const BadgeStatusPage = () => {
               <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                 세례명
               </th>
-              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
-                1주
-              </th>
-              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
-                2주
-              </th>
-              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
-                3주
-              </th>
-              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
-                4주
-              </th>
-              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
-                특별1
-              </th>
-              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
-                특별2
-              </th>
+              {visibleColumns.map(column => (
+                <th 
+                  key={column} 
+                  className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14"
+                >
+                  {column.replace('W', '')}주
+                  {column.startsWith('S') && '특별' + column.replace('S', '')}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -231,9 +252,9 @@ const BadgeStatusPage = () => {
                 <td className="px-2 py-4 text-sm text-gray-500 truncate">
                   {userBadge.user.baptismal_name}
                 </td>
-                {['W1', 'W2', 'W3', 'W4', 'S1', 'S2'].map((week) => (
-                  <td key={week} className="px-2 py-4 text-center">
-                    {userBadge.badges[`${selectedMonth}-${week}`] ? (
+                {visibleColumns.map((column) => (
+                  <td key={column} className="px-2 py-4 text-center">
+                    {userBadge.badges[`${selectedMonth}-${column}`] ? (
                       <span className="inline-flex items-center justify-center w-5 h-5 bg-green-600 text-white rounded-full">
                         ✓
                       </span>

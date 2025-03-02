@@ -300,6 +300,12 @@ export default function MyPage() {
                 워크샵 참가자 현황
               </button>
               <button
+                onClick={() => router.push('/schedule')}
+                className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                2025년 일정
+              </button>
+              <button
                 onClick={() => router.push('/admin/badge-status')}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
               >
@@ -321,6 +327,12 @@ export default function MyPage() {
                 className="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
               >
                 워크샵 참가자 현황
+              </button>
+              <button
+                onClick={() => router.push('/schedule')}
+                className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                2025년 일정
               </button>
               <button
                 onClick={() => router.push('/admin/badge-status')}
@@ -349,16 +361,6 @@ export default function MyPage() {
         </div>
       )}
 
-      {/* 로그아웃 버튼 */}
-      <div className="mt-6 mb-6">
-        <button
-          onClick={handleLogout}
-          className="w-full bg-white/50 backdrop-blur-sm text-gray-700 py-3.5 rounded-2xl shadow-lg hover:bg-white/60 transition-all duration-300 font-medium border border-white/60"
-        >
-          로그아웃
-        </button>
-      </div>
-
       {/* con.png 이미지 추가 */}
       <div className="flex justify-center mb-20">
         <Image
@@ -375,6 +377,16 @@ export default function MyPage() {
         />
       </div>
       
+      {/* 로그아웃 버튼 */}
+      <div className="mb-6">
+        <button
+          onClick={handleLogout}
+          className="w-full bg-white/50 backdrop-blur-sm text-gray-700 py-3.5 rounded-2xl shadow-lg hover:bg-white/60 transition-all duration-300 font-medium border border-white/60"
+        >
+          로그아웃
+        </button>
+      </div>
+
       <BottomNav />
 
       {/* 이미지 선택 오버레이 */}
