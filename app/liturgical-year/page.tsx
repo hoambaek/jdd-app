@@ -182,9 +182,9 @@ export default function LiturgicalYearPage() {
       <div className="container mx-auto px-4 py-8">
         {/* iOS 스타일 헤더 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-center text-[#000000] mb-1">전례주년 교리수업</h1>
+          <h1 className="text-3xl font-semibold text-center text-[#000000] mb-1">전례주년</h1>
           <p className="text-center text-[#8E8E93] text-base">
-            {step === 0 ? '이미지를 클릭해보세요!' : 
+            {step === 0 ? '우리 보좌신부님을 깨워서 전례주년에 대해 알아봐요!' : 
              step === 1 ? '잠시만 기다려주세요...' : 
              '가톨릭 교회는 전례주년에 따라 다른 색깔의 제의를 입습니다.\n각 색깔은 특별한 의미를 담고 있어요!'}
           </p>
