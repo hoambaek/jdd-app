@@ -204,30 +204,27 @@ export default function LiturgicalYearPage() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={step === 0 ? 'initial' : selectedSeason}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0 }}
                 animate={{ 
-                  opacity: 1, 
-                  scale: 1,
+                  opacity: 1,
                   transition: { 
-                    type: "spring", 
-                    stiffness: 260, 
-                    damping: 20,
-                    duration: 0.5 
+                    duration: 0.8,
+                    ease: "easeInOut"
                   }
                 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+                exit={{ opacity: 0, transition: { duration: 0.5 } }}
                 className="absolute inset-0 flex items-center justify-center"
               >
                 {/* 변신 효과 - 파티클 */}
                 {isTransitioning && (
-                  <div className="absolute inset-0 flex items-center justify-center z-10 overflow-hidden">
+                  <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
                     {particles.map((particle) => (
                       <motion.div
                         key={particle.id}
                         className="absolute rounded-full"
                         style={{
-                          left: `${particle.x}%`,
-                          top: `${particle.y}%`,
+                          left: `calc(50% + ${particle.x - 50}%)`,
+                          top: `calc(50% + ${particle.y - 50}%)`,
                           width: `${particle.size}px`,
                           height: `${particle.size}px`,
                           background: particle.color,
@@ -237,8 +234,8 @@ export default function LiturgicalYearPage() {
                         animate={{
                           scale: [0, 1.5, 0],
                           opacity: [0, 1, 0],
-                          x: [0, (Math.random() - 0.5) * 150],
-                          y: [0, (Math.random() - 0.5) * 150],
+                          x: [0, (Math.random() - 0.5) * 250],
+                          y: [0, (Math.random() - 0.5) * 250],
                         }}
                         transition={{
                           duration: particle.duration,
@@ -262,15 +259,20 @@ export default function LiturgicalYearPage() {
                     />
                   ) : (
                     <motion.div
+                      initial={{ opacity: 0 }}
                       animate={{ 
+                        opacity: 1,
                         rotate: [0, 5, 0, -5, 0],
                       }}
                       transition={{ 
-                        repeat: Infinity, 
-                        duration: 4,
-                        times: [0, 0.25, 0.5, 0.75, 1],
-                        ease: "easeInOut",
-                        repeatDelay: 0.2
+                        opacity: { duration: 0.5 },
+                        rotate: {
+                          repeat: Infinity, 
+                          duration: 4,
+                          times: [0, 0.25, 0.5, 0.75, 1],
+                          ease: "easeInOut",
+                          repeatDelay: 0.2
+                        }
                       }}
                       className="w-full h-full"
                     >
