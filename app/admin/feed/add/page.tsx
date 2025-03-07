@@ -29,6 +29,7 @@ const AddFeedForm = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
+  const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [existingImageUrl, setExistingImageUrl] = useState('');
@@ -87,6 +88,7 @@ const AddFeedForm = () => {
                   : '';
             setTags(tagsString);
           }
+          setUrl(data.url || '');
           setFeedId(data.id);
           setDate(data.date || '');
         }
@@ -181,7 +183,8 @@ const AddFeedForm = () => {
         date: date,
         tags: processedTags,
         user_id: session.user.id,
-        image_url: finalImageUrl
+        image_url: finalImageUrl,
+        url: url.trim()
       };
 
       const { error: dbError } = feedId 
@@ -269,12 +272,15 @@ const AddFeedForm = () => {
   }, [supabase, router]);
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">
-        {feedId ? '피드 수정' : '새 피드 추가'}
-      </h1>
+    <div className="container mx-auto p-4 max-w-4xl">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">{feedId ? '피드 수정' : '새 피드 작성'}</h1>
+        <Link href="/admin/feed" className="text-blue-500 hover:text-blue-700">
+          목록으로 돌아가기
+        </Link>
+      </div>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div
           className={`relative border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors
             ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
@@ -340,30 +346,48 @@ const AddFeedForm = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
             제목
           </label>
           <input
             type="text"
+            id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border rounded"
-            placeholder="제목을 입력하세요"
+            className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
             내용
           </label>
           <textarea
+            id="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full p-2 border rounded h-32"
-            placeholder="내용을 입력하세요"
+            rows={10}
+            className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
             required
           />
+        </div>
+
+        <div>
+          <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
+            URL (선택사항)
+          </label>
+          <input
+            type="url"
+            id="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://example.com"
+            className="w-full px-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            연결할 페이지가 있는 경우 URL을 입력하세요. 피드에 '링크 열기' 버튼이 표시됩니다.
+          </p>
         </div>
 
         <div>

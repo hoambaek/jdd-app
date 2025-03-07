@@ -15,6 +15,7 @@ interface Feed {
   tags: string;
   created_at: string;
   date: string;
+  url?: string;
 }
 
 export default function Activity() {
@@ -158,7 +159,7 @@ export default function Activity() {
                       {feed.content}
                     </p>
                     {feed.tags && (
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1.5 mb-4">
                         {typeof feed.tags === 'string' 
                           ? feed.tags.split(',').map((tag, index) => (
                               <span 
@@ -171,6 +172,17 @@ export default function Activity() {
                           : null
                         }
                       </div>
+                    )}
+                    {feed.url && (
+                      <a
+                        href={feed.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-block bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors mt-2"
+                      >
+                        링크 열기
+                      </a>
                     )}
                   </div>
                 </div>
@@ -215,7 +227,7 @@ export default function Activity() {
                           {feed.content}
                         </p>
                         {feed.tags && (
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className="flex flex-wrap gap-1.5 mb-4">
                             {typeof feed.tags === 'string' 
                               ? feed.tags.split(',').map((tag, index) => (
                                   <span 
@@ -228,6 +240,17 @@ export default function Activity() {
                               : null
                             }
                           </div>
+                        )}
+                        {feed.url && (
+                          <a
+                            href={feed.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-block bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors mt-2"
+                          >
+                            링크 열기
+                          </a>
                         )}
                       </div>
                     </div>

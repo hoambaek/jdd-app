@@ -5,4 +5,5 @@ export interface Feed {
   image_url: string;
   created_at: string;
   tags: string[];
+  url?: string;
 } 

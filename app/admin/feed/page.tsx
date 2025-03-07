@@ -70,6 +70,17 @@ export default function AdminFeedPage() {
               >
                 수정하기
               </button>
+              {feed.url && (
+                <a
+                  href={feed.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors mb-2"
+                >
+                  링크 열기
+                </a>
+              )}
               {feed.tags && feed.tags.length > 0 && (
                 <div className="text-white text-sm">
                   태그: {Array.isArray(feed.tags) ? feed.tags.join(', ') : feed.tags}
