@@ -317,6 +317,12 @@ export default function MyPage() {
               >
                 배지 관리
               </button>
+              <button
+                onClick={() => router.push('/admin/doctrine')}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
+              >
+                교리수업관리
+              </button>
             </>
           )}
           {/* 선생님이지만 관리자가 아닌 경우 */}

@@ -6,10 +6,12 @@
     "dev": "rm -rf .next/cache && next dev",
     "build": "next build || exit 0",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "mcp": "node scripts/start-mcp.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@modelcontextprotocol/server-postgres": "^0.6.2",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.47.10",
     "@types/qrcode": "^1.5.5",
@@ -21,6 +23,7 @@
     "critters": "^0.0.25",
     "dotenv": "^16.4.7",
     "firebase": "^10.8.0",
+    "framer-motion": "^12.4.10",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.468.0",
     "next": "14.2.16",
