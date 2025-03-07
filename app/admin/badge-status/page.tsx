@@ -6,6 +6,15 @@ import type { Database } from '@/types/supabase';
 import styled from 'styled-components';
 import BottomNav from '../../components/BottomNav';
 
+// Supabase에서 반환하는 데이터 구조에 맞는 타입 정의
+interface UserBadgeRecord {
+  user_id: string;
+  badge_id: string;
+  badges: {
+    name: string;
+  };
+}
+
 interface UserBadge {
   user: {
     id: string;
@@ -23,7 +32,23 @@ const gradeOrder = ['중1', '중2', '중3', '고1', '고2', '고3'];
 const BadgeStatusPage = () => {
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState<string>('2024-01');
+  
+  // 현재 날짜를 기반으로 초기 선택 월 설정
+  const getCurrentMonth = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString(); // 월은 0부터 시작하므로 +1
+    return month;
+  };
+  
+  // 현재 연도 가져오기
+  const currentYear = new Date().getFullYear();
+  
+  // 선택된 월 (1~12)
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
+  // 선택된 연도-월 형식 (YYYY-MM)
+  const formattedMonth = `${currentYear}-${selectedMonth.padStart(2, '0')}`;
+  
   const supabase = createClientComponentClient<Database>();
   
   // 숨길 배지 목록 정의 (월-번호 형식)
@@ -79,7 +104,7 @@ const BadgeStatusPage = () => {
       if (badgesError) throw badgesError;
 
       // 3. 모든 사용자의 배지 획득 현황을 한 번에 조회
-      const { data: userBadges, error: userBadgesError } = await supabase
+      const { data: userBadgesData, error: userBadgesError } = await supabase
         .from('user_badges')
         .select(`
           user_id,
@@ -90,11 +115,14 @@ const BadgeStatusPage = () => {
         `);
 
       if (userBadgesError) throw userBadgesError;
+      
+      // 타입 단언을 사용하여 타입 지정
+      const userBadges = userBadgesData as unknown as UserBadgeRecord[];
 
-      // 선택된 월의 숫자 부분 추출 (예: '2024-03' -> '3')
-      const selectedMonthNumber = parseInt(selectedMonth.split('-')[1]);
+      // 선택된 월의 숫자 부분 추출
+      const selectedMonthNumber = parseInt(selectedMonth);
 
-      // 4. 데이터 가공 - 수정된 부분
+      // 4. 데이터 가공
       const processedUsers = users
         ?.filter(user => user.grade && gradeOrder.includes(user.grade))
         .sort((a, b) => {
@@ -105,12 +133,12 @@ const BadgeStatusPage = () => {
         })
         .map(user => {
           const userBadgeStatus = {
-            [`${selectedMonth}-W1`]: false,
-            [`${selectedMonth}-W2`]: false,
-            [`${selectedMonth}-W3`]: false,
-            [`${selectedMonth}-W4`]: false,
-            [`${selectedMonth}-S1`]: false,
-            [`${selectedMonth}-S2`]: false,
+            [`${formattedMonth}-W1`]: false,
+            [`${formattedMonth}-W2`]: false,
+            [`${formattedMonth}-W3`]: false,
+            [`${formattedMonth}-W4`]: false,
+            [`${formattedMonth}-S1`]: false,
+            [`${formattedMonth}-S2`]: false,
           };
 
           // 해당 사용자의 배지 데이터 필터링
@@ -120,26 +148,26 @@ const BadgeStatusPage = () => {
             
             // 배지 이름이 현재 선택된 월과 일치하는지 확인
             // 예: 3월이면 "3-1", "3-2" 등으로 시작하는 배지만 필터링
-            const badgeMonth = ub.badges?.name?.split('-')[0];
+            const badgeMonth = ub.badges && ub.badges.name ? ub.badges.name.split('-')[0] : '';
             return badgeMonth === selectedMonthNumber.toString();
           });
 
           // 배지 상태 업데이트
           userAcquiredBadges?.forEach(ub => {
-            if (ub.badges?.name) {
+            if (ub.badges && ub.badges.name) {
               const badgeName = ub.badges.name;  // 예: "3-1", "3-2" 등
               const weekNumber = badgeName.split('-')[1];  // "1", "2" 등
               
               // 주간 배지 (1~4)
               if (weekNumber && parseInt(weekNumber) <= 4) {
-                userBadgeStatus[`${selectedMonth}-W${weekNumber}`] = true;
+                userBadgeStatus[`${formattedMonth}-W${weekNumber}`] = true;
               }
               // 특별 배지 (5, 6)
               else if (weekNumber === '5') {
-                userBadgeStatus[`${selectedMonth}-S1`] = true;
+                userBadgeStatus[`${formattedMonth}-S1`] = true;
               }
               else if (weekNumber === '6') {
-                userBadgeStatus[`${selectedMonth}-S2`] = true;
+                userBadgeStatus[`${formattedMonth}-S2`] = true;
               }
             }
           });
@@ -168,23 +196,24 @@ const BadgeStatusPage = () => {
     }
   };
 
+  // 월 데이터
   const months = [
-    { value: '2024-01', label: '1월' },
-    { value: '2024-02', label: '2월' },
-    { value: '2024-03', label: '3월' },
-    { value: '2024-04', label: '4월' },
-    { value: '2024-05', label: '5월' },
-    { value: '2024-06', label: '6월' },
-    { value: '2024-07', label: '7월' },
-    { value: '2024-08', label: '8월' },
-    { value: '2024-09', label: '9월' },
-    { value: '2024-10', label: '10월' },
-    { value: '2024-11', label: '11월' },
-    { value: '2024-12', label: '12월' }
+    { value: '1', label: '1월' },
+    { value: '2', label: '2월' },
+    { value: '3', label: '3월' },
+    { value: '4', label: '4월' },
+    { value: '5', label: '5월' },
+    { value: '6', label: '6월' },
+    { value: '7', label: '7월' },
+    { value: '8', label: '8월' },
+    { value: '9', label: '9월' },
+    { value: '10', label: '10월' },
+    { value: '11', label: '11월' },
+    { value: '12', label: '12월' }
   ];
   
   // 현재 선택된 월에 표시할 컬럼 목록 계산
-  const visibleColumns = getVisibleColumns(selectedMonth);
+  const visibleColumns = getVisibleColumns(formattedMonth);
 
   if (loading) {
     return <div className="p-4">로딩 중...</div>;
@@ -196,18 +225,20 @@ const BadgeStatusPage = () => {
         학생 출석 현황
       </h1>
 
-      <div className="mb-6">
-        <select
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {months.map((month) => (
-            <option key={month.value} value={month.value}>
-              {month.label}
-            </option>
-          ))}
-        </select>
+      <div className="mb-6 flex flex-wrap justify-center gap-2">
+        {months.map((month) => (
+          <button
+            key={month.value}
+            onClick={() => setSelectedMonth(month.value)}
+            className={`px-4 py-2 rounded-full transition-all ${
+              selectedMonth === month.value
+                ? 'bg-indigo-600 text-white font-medium shadow-md'
+                : 'bg-white/70 text-gray-700 hover:bg-white hover:shadow-sm'
+            }`}
+          >
+            {month.label}
+          </button>
+        ))}
       </div>
 
       <div className="overflow-x-auto">
@@ -254,7 +285,7 @@ const BadgeStatusPage = () => {
                 </td>
                 {visibleColumns.map((column) => (
                   <td key={column} className="px-2 py-4 text-center">
-                    {userBadge.badges[`${selectedMonth}-${column}`] ? (
+                    {userBadge.badges[`${formattedMonth}-${column}`] ? (
                       <span className="inline-flex items-center justify-center w-5 h-5 bg-green-600 text-white rounded-full">
                         ✓
                       </span>

@@ -18,7 +18,21 @@ interface MonthlySchedule {
 }
 
 const Schedule2025Page = () => {
-  const [selectedMonth, setSelectedMonth] = useState<string>('1');
+  // 현재 날짜를 기반으로 초기 선택 월 설정
+  const getCurrentMonth = () => {
+    const now = new Date();
+    const month = (now.getMonth() + 1).toString(); // 월은 0부터 시작하므로 +1
+    
+    // 2025년 일정이므로, 현재 연도가 2025년이 아니면 1월을 기본값으로 설정
+    if (now.getFullYear() !== 2025) {
+      return '1';
+    }
+    
+    // 1~12월 범위 내에서만 선택
+    return month;
+  };
+  
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
 
   // 월별 색상 정의
   const monthColors: { [key: string]: { main: string; light: string; dark: string; text: string } } = {

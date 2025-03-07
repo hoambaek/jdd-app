@@ -282,12 +282,6 @@ export default function MyPage() {
                 피드 관리
               </button>
               <button
-                onClick={() => router.push('/admin/story')}
-                className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
-              >
-                스토리 관리
-              </button>
-              <button
                 onClick={() => router.push('/admin/workshop')}
                 className="w-full bg-gradient-to-r from-pink-600 to-rose-600 text-white py-3.5 rounded-2xl shadow-lg hover:opacity-90 transition-all duration-300 font-medium"
               >

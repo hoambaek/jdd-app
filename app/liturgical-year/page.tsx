@@ -14,6 +14,7 @@ const liturgicalSeasons = [
     textColor: 'text-gray-800',
     borderColor: 'border-gray-200',
     bgColor: 'bg-gray-100',
+    iosColor: '#8E8E93',
     description: '가톨릭 교회의 전례주년을 알아보세요',
     image: '/lesson/01/1.png',
   },
@@ -24,6 +25,7 @@ const liturgicalSeasons = [
     textColor: 'text-green-600',
     borderColor: 'border-green-500',
     bgColor: 'bg-green-50',
+    iosColor: '#34C759',
     description: '그리스도의 신비를 전체적으로 기념하는 시기',
     image: '/lesson/01/2_green.png',
   },
@@ -34,6 +36,7 @@ const liturgicalSeasons = [
     textColor: 'text-purple-600',
     borderColor: 'border-purple-500',
     bgColor: 'bg-purple-50',
+    iosColor: '#AF52DE',
     description: '구세주 오심을 기다리며 준비하는 시기',
     image: '/lesson/01/3-purple.png',
   },
@@ -41,9 +44,10 @@ const liturgicalSeasons = [
     id: 'christmas',
     name: '성탄 시기',
     color: 'white',
-    textColor: 'text-gray-800',
+    textColor: 'text-black',
     borderColor: 'border-gray-300',
     bgColor: 'bg-blue-50',
+    iosColor: '#000000',
     description: '예수 그리스도의 탄생을 축하하는 시기',
     image: '/lesson/01/6-white.png',
   },
@@ -54,6 +58,7 @@ const liturgicalSeasons = [
     textColor: 'text-red-600',
     borderColor: 'border-red-500',
     bgColor: 'bg-red-50',
+    iosColor: '#FF3B30',
     description: '성령의 강림을 기념하는 대축일',
     image: '/lesson/01/4-red.png',
   },
@@ -64,6 +69,7 @@ const liturgicalSeasons = [
     textColor: 'text-yellow-600',
     borderColor: 'border-yellow-400',
     bgColor: 'bg-yellow-50',
+    iosColor: '#FFCC00',
     description: '그리스도의 부활을 기념하고 축하하는 시기',
     image: '/lesson/01/5-yellow.png',
   }
@@ -71,35 +77,35 @@ const liturgicalSeasons = [
 
 // 컬러 버튼 데이터
 const colorButtons = [
-  { id: 'white', bgColor: 'bg-white', borderColor: 'border-gray-300', season: 'christmas' },
-  { id: 'green', bgColor: 'bg-green-500', borderColor: 'border-green-600', season: 'ordinary' },
-  { id: 'purple', bgColor: 'bg-purple-500', borderColor: 'border-purple-600', season: 'advent' },
-  { id: 'red', bgColor: 'bg-red-500', borderColor: 'border-red-600', season: 'pentecost' },
-  { id: 'yellow', bgColor: 'bg-yellow-400', borderColor: 'border-yellow-500', season: 'easter' },
+  { id: 'white', bgColor: '#FFFFFF', borderColor: '#E5E5EA', season: 'christmas', iosColor: '#FFFFFF' },
+  { id: 'green', bgColor: '#34C759', borderColor: '#34C759', season: 'ordinary', iosColor: '#34C759' },
+  { id: 'purple', bgColor: '#AF52DE', borderColor: '#AF52DE', season: 'advent', iosColor: '#AF52DE' },
+  { id: 'red', bgColor: '#FF3B30', borderColor: '#FF3B30', season: 'pentecost', iosColor: '#FF3B30' },
+  { id: 'yellow', bgColor: '#FFCC00', borderColor: '#FFCC00', season: 'easter', iosColor: '#FFCC00' },
 ];
 
 // 파티클 생성 함수
 const generateParticles = (count: number) => {
-  // 비비드한 컬러 배열
-  const vividColors = [
-    'rgba(255, 0, 128, 0.8)', // 핑크
-    'rgba(0, 191, 255, 0.8)', // 하늘색
-    'rgba(255, 215, 0, 0.8)', // 골드
-    'rgba(138, 43, 226, 0.8)', // 보라색
-    'rgba(50, 205, 50, 0.8)', // 라임 그린
-    'rgba(255, 69, 0, 0.8)', // 오렌지 레드
-    'rgba(30, 144, 255, 0.8)', // 도지 블루
-    'rgba(255, 105, 180, 0.8)', // 핫 핑크
+  // iOS 컬러 배열
+  const iosColors = [
+    'rgba(255, 59, 48, 0.8)',    // Red
+    'rgba(255, 204, 0, 0.8)',    // Yellow
+    'rgba(52, 199, 89, 0.8)',    // Green
+    'rgba(0, 122, 255, 0.8)',    // Blue
+    'rgba(175, 82, 222, 0.8)',   // Purple
+    'rgba(255, 149, 0, 0.8)',    // Orange
+    'rgba(90, 200, 250, 0.8)',   // Light Blue
+    'rgba(88, 86, 214, 0.8)',    // Indigo
   ];
   
   return Array.from({ length: count }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: Math.random() * 8 + 3, // 크기 약간 키움
+    size: Math.random() * 8 + 3,
     duration: Math.random() * 2 + 1,
     delay: Math.random() * 0.5,
-    color: vividColors[Math.floor(Math.random() * vividColors.length)],
+    color: iosColors[Math.floor(Math.random() * iosColors.length)],
   }));
 };
 
@@ -172,14 +178,20 @@ export default function LiturgicalYearPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 pb-20">
+    <div className="min-h-screen bg-[#F2F2F7] pb-20">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center text-indigo-800 mb-2">전례주년 교리수업</h1>
-        <p className="text-center text-gray-600 mb-8">
-          {step === 0 ? '이미지를 클릭해보세요!' : 
-           step === 1 ? '잠시만 기다려주세요...' : 
-           '색깔 버튼을 눌러 전례주년의 의미를 알아보세요'}
-        </p>
+        {/* iOS 스타일 헤더 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-center text-[#000000] mb-1">전례주년 교리수업</h1>
+          <p className="text-center text-[#8E8E93] text-base">
+            {step === 0 ? '이미지를 클릭해보세요!' : 
+             step === 1 ? '잠시만 기다려주세요...' : 
+             '가톨릭 교회는 전례주년에 따라 다른 색깔의 제의를 입습니다.\n각 색깔은 특별한 의미를 담고 있어요!'}
+          </p>
+          
+          {/* 설명 텍스트를 헤더 아래로 이동 */}
+          
+        </div>
         
         {/* 캐릭터 이미지 및 설명 */}
         <div className="relative flex flex-col items-center justify-center mb-12">
@@ -289,13 +301,13 @@ export default function LiturgicalYearPage() {
                         repeatType: "reverse" 
                       }}
                     >
-                      <div className="bg-white rounded-full p-2 shadow-lg">
+                      <div className="bg-white/80 backdrop-blur-md rounded-full p-2 shadow-md">
                         <Image
                           src="/finger.png"
                           alt="클릭 아이콘"
                           width={40}
                           height={40}
-                          className="transform rotate-180"
+                          className="transform"
                         />
                       </div>
                     </motion.div>
@@ -305,7 +317,7 @@ export default function LiturgicalYearPage() {
             </AnimatePresence>
           </div>
           
-          {/* 말풍선 설명 박스 - 단계 2에서만 표시 */}
+          {/* 말풍선 설명 박스 - 단계 2에서만 표시 (iOS 스타일) */}
           {step === 2 && (
             <AnimatePresence mode="wait">
               <motion.div
@@ -314,23 +326,34 @@ export default function LiturgicalYearPage() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.9 }}
                 transition={{ duration: 0.5 }}
-                className={`${currentSeason.bgColor} rounded-xl shadow-lg p-4 mb-4 w-full max-w-md text-center relative mt-6`}
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: currentSeason.iosColor,
+                  borderLeftWidth: '4px'
+                }}
+                className="backdrop-blur-lg rounded-xl shadow-sm p-4 mb-4 w-full max-w-md text-left relative mt-6"
               >
-                {/* 말풍선 꼬리 */}
-                <div className={`absolute -top-4 left-1/2 transform -translate-x-1/2 w-0 h-0 
-                  border-l-[10px] border-l-transparent 
-                  border-r-[10px] border-r-transparent 
-                  border-b-[16px] ${currentSeason.bgColor.replace('bg-', 'border-b-')}`}>
-                </div>
+                {/* iOS 스타일 말풍선 꼬리 */}
+                <div 
+                  className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-6 h-6 rotate-45"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  }}
+                ></div>
                 
-                <h2 className={`text-xl font-bold ${currentSeason.textColor}`}>{currentSeason.name}</h2>
-                <p className="text-gray-600 mt-1">{currentSeason.description}</p>
+                <h2 
+                  className="text-xl font-semibold mb-1"
+                  style={{ color: currentSeason.iosColor }}
+                >
+                  {currentSeason.name}
+                </h2>
+                <p className="text-[#3A3A3C]">{currentSeason.description}</p>
               </motion.div>
             </AnimatePresence>
           )}
         </div>
         
-        {/* 컬러 버튼 - 단계 2에서만 표시 */}
+        {/* 컬러 버튼 - 단계 2에서만 표시 (iOS 스타일) */}
         {step === 2 && (
           <motion.div 
             className="flex justify-center space-x-4 mb-8 relative"
@@ -342,20 +365,22 @@ export default function LiturgicalYearPage() {
               <motion.div key={button.id} className="relative">
                 <motion.button
                   onClick={() => handleSeasonChange(button.season)}
-                  className={`w-14 h-14 rounded-full ${button.bgColor} border-2 ${button.borderColor} shadow-md focus:outline-none`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  animate={{ 
+                  style={{ 
+                    backgroundColor: button.bgColor,
+                    borderColor: button.borderColor,
                     boxShadow: selectedSeason === button.season 
-                      ? '0 0 0 3px rgba(79, 70, 229, 0.5)' 
-                      : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      ? `0 0 0 3px rgba(0, 122, 255, 0.3)` 
+                      : `0 2px 8px rgba(0, 0, 0, 0.1)`
                   }}
+                  className="w-14 h-14 rounded-full border-2 focus:outline-none"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 />
                 
                 {/* 첫 번째 버튼에 클릭 힌트 추가 */}
                 {index === 0 && showButtonHint && (
                   <motion.div 
-                    className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-10"
+                    className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-10"
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ 
                       opacity: 1, 
@@ -367,32 +392,19 @@ export default function LiturgicalYearPage() {
                       repeatType: "reverse" 
                     }}
                   >
-                    <div className="bg-white rounded-full p-2 shadow-lg">
+                    <div className="bg-white/80 backdrop-blur-md rounded-full p-2 shadow-sm">
                       <Image
                         src="/finger.png"
                         alt="클릭 아이콘"
-                        width={40}
-                        height={40}
-                        className="transform rotate-180"
+                        width={50}
+                        height={50}
+                        className="transform"
                       />
                     </div>
                   </motion.div>
                 )}
               </motion.div>
             ))}
-          </motion.div>
-        )}
-        
-        {/* 설명 텍스트 - 단계 2에서만 표시 */}
-        {step === 2 && (
-          <motion.div 
-            className="text-center text-sm text-gray-600 mb-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <p>가톨릭 교회는 전례주년에 따라 다른 색깔의 제의를 입습니다.</p>
-            <p>각 색깔은 특별한 의미를 담고 있어요!</p>
           </motion.div>
         )}
       </div>
@@ -407,6 +419,13 @@ export default function LiturgicalYearPage() {
         }
         .sparkle {
           animation: sparkle 1s ease-in-out infinite;
+        }
+        
+        /* iOS 스타일 폰트 적용 */
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
       `}</style>
     </div>
