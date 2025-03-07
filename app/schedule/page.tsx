@@ -74,8 +74,8 @@ const Schedule2025Page = () => {
       month: '3월',
       items: [
         { date: '1', liturgy: '연중 제8주일', event: '기초교리(영상교리 04, 39) "미사"', notes: '', reference: '* 교리교사 단합대회(3/2~3)\n* 재의 수요일(3/5)\n* 사순시기 판공성사\n* 학생회장단 연수(3/15~16)' },
-        { date: '8', liturgy: '사순 제1주일', event: '기초교리(영상교리 15) "전례주년"', notes: '', reference: '' },
-        { date: '15', liturgy: '사순 제2주일', event: '학생자치회의', notes: '', reference: '' },
+        { date: '8', liturgy: '사순 제1주일', event: '학생자치회의', notes: '', reference: '' },
+        { date: '15', liturgy: '사순 제2주일', event: '기초교리(영상교리 15) "전례주년"', notes: '', reference: '' },
         { date: '22', liturgy: '사순 제3주일', event: '생태교육', notes: '', reference: '' },
         { date: '29', liturgy: '사순 제4주일', event: '가정주일', notes: '', reference: '' },
       ]
