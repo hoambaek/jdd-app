@@ -248,7 +248,7 @@ export default function LiturgicalYearPage() {
                 )}
                 
                 {/* 실제 이미지 */}
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full filter drop-shadow-xl" style={{ filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.2))' }}>
                   {step === 0 ? (
                     <Image
                       src="/lesson/01/0.png"
@@ -274,7 +274,8 @@ export default function LiturgicalYearPage() {
                           repeatDelay: 0.2
                         }
                       }}
-                      className="w-full h-full"
+                      className="w-full h-full filter drop-shadow-xl"
+                      style={{ filter: 'drop-shadow(0 10px 8px rgba(0, 0, 0, 0.2))' }}
                     >
                       <Image
                         src={currentSeason.image}
