@@ -15,7 +15,7 @@ const liturgicalSeasons = [
     borderColor: 'border-gray-200',
     bgColor: 'bg-gray-100',
     iosColor: '#8E8E93',
-    description: '가톨릭 교회의 전례주년을 알아보세요',
+    description: '찬미예수님! 깨워줘서 고마워요. 그럼 오늘은 전례주년에 대해 배워볼까요!',
     image: '/lesson/01/1.png',
   },
   {
@@ -26,7 +26,7 @@ const liturgicalSeasons = [
     borderColor: 'border-green-500',
     bgColor: 'bg-green-50',
     iosColor: '#34C759',
-    description: '그리스도의 신비를 전체적으로 기념하는 시기',
+    description: '그래요. 녹색은 그리스도의 신비를 전체적으로 기념하는 시기에요.',
     image: '/lesson/01/2_green.png',
   },
   {
@@ -37,7 +37,7 @@ const liturgicalSeasons = [
     borderColor: 'border-purple-500',
     bgColor: 'bg-purple-50',
     iosColor: '#AF52DE',
-    description: '구세주 오심을 기다리며 준비하는 시기',
+    description: '보라색은 구세주 오심을 기다리며 준비하는 시기에요.',
     image: '/lesson/01/3-purple.png',
   },
   {
@@ -48,7 +48,7 @@ const liturgicalSeasons = [
     borderColor: 'border-gray-300',
     bgColor: 'bg-blue-50',
     iosColor: '#000000',
-    description: '예수 그리스도의 탄생을 축하하는 시기',
+    description: '하얀색은 예수 그리스도의 탄생을 축하하는 시기에요. 여러분!',
     image: '/lesson/01/6-white.png',
   },
   {
@@ -59,7 +59,7 @@ const liturgicalSeasons = [
     borderColor: 'border-red-500',
     bgColor: 'bg-red-50',
     iosColor: '#FF3B30',
-    description: '성령의 강림을 기념하는 대축일',
+    description: '빨간색은 성령의 강림을 기념하는 대축일에요.',
     image: '/lesson/01/4-red.png',
   },
   {
@@ -70,7 +70,7 @@ const liturgicalSeasons = [
     borderColor: 'border-yellow-400',
     bgColor: 'bg-yellow-50',
     iosColor: '#FFCC00',
-    description: '그리스도의 부활을 기념하고 축하하는 시기',
+    description: '노란색은 그리스도의 부활을 기념하고 축하하는 시기에요. 이제 잘 알겠죠?',
     image: '/lesson/01/5-yellow.png',
   }
 ];
@@ -181,8 +181,10 @@ export default function LiturgicalYearPage() {
     <div className="min-h-screen bg-[#F2F2F7] pb-20">
       <div className="container mx-auto px-4 py-8">
         {/* iOS 스타일 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-center text-[#000000] mb-1">전례주년</h1>
+        <div className="mb-8 flex flex-col items-center">
+          <div className="bg-white/80 backdrop-blur-md px-8 py-3 rounded-full shadow-sm mb-2">
+            <h1 className="text-3xl font-semibold text-[#000000]">전례주년</h1>
+          </div>
           <p className="text-center text-[#8E8E93] text-base">
             {step === 0 ? '우리 보좌신부님을 깨워서 전례주년에 대해 알아봐요!' : 
              step === 1 ? '잠시만 기다려주세요...' : 
