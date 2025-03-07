@@ -14,6 +14,7 @@ interface DoctrineClass {
   created_at: string;
   image_url?: string;
   lessons_count: number;
+  link?: string;
 }
 
 export default function DoctrineManagementPage() {
@@ -21,6 +22,7 @@ export default function DoctrineManagementPage() {
   const [classes, setClasses] = useState<DoctrineClass[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
@@ -68,7 +70,8 @@ export default function DoctrineManagementPage() {
           description: '가톨릭 전례력의 시작부터 끝까지, 신앙생활의 주기를 이해하는 교리 수업',
           created_at: new Date().toISOString(),
           image_url: '/images/liturgical-year.jpg',
-          lessons_count: 12
+          lessons_count: 1,
+          link: '/liturgical-year'
         }
       ];
       
@@ -78,6 +81,17 @@ export default function DoctrineManagementPage() {
       console.error('교리 수업 불러오기 오류:', error);
       setLoading(false);
     }
+  };
+
+  const copyToClipboard = (link: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}${link}`)
+      .then(() => {
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      })
+      .catch(err => {
+        console.error('클립보드 복사 실패:', err);
+      });
   };
 
   if (loading) {
@@ -107,55 +121,43 @@ export default function DoctrineManagementPage() {
           classes.map((course) => (
             <div
               key={course.id}
-              className="bg-white/80 backdrop-blur-md rounded-xl p-4 shadow-lg border border-white/60"
-              onClick={() => router.push(`/admin/doctrine/${course.id}`)}
+              className="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/60"
             >
-              <div className="flex items-start gap-4">
-                <div className="rounded-lg overflow-hidden w-24 h-24 flex-shrink-0 bg-gray-100">
-                  {course.image_url ? (
-                    <Image
-                      src={course.image_url}
-                      alt={course.title}
-                      width={96}
-                      height={96}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-1">{course.title}</h2>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{course.description}</p>
-                  
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-indigo-600 font-medium flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
-                      {course.lessons_count}개 수업
-                    </span>
-                    
-                    <span className="text-xs text-gray-500">
-                      {new Date(course.created_at).toLocaleDateString('ko-KR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">{course.title}</h2>
+              
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center bg-gray-50 rounded-lg p-3 border border-gray-200">
+                  <div className="flex-1 font-mono text-sm text-gray-700 truncate">
+                    {window.location.origin}{course.link}
                   </div>
+                  <button
+                    onClick={() => copyToClipboard(course.link || '')}
+                    className="ml-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center"
+                  >
+                    {linkCopied ? (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        복사됨
+                      </>
+                    ) : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        복사하기
+                      </>
+                    )}
+                  </button>
                 </div>
                 
-                <div className="self-center text-indigo-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+                <Link 
+                  href={course.link || '#'} 
+                  className="bg-indigo-600 text-white py-2 px-4 rounded-md text-center hover:bg-indigo-700 transition-colors"
+                >
+                  페이지 방문하기
+                </Link>
               </div>
             </div>
           ))
