@@ -154,6 +154,19 @@ export default function Activity() {
                   <h3 className="text-2xl font-semibold mb-4">
                     {feed.title}
                   </h3>
+                  
+                  {feed.url && (
+                    <a
+                      href={feed.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center justify-center bg-green-500 text-white px-4 py-1.5 rounded-lg hover:bg-green-600 transition-colors mb-4 text-sm font-medium"
+                    >
+                      링크 열기
+                    </a>
+                  )}
+                  
                   <div className="flex-1 overflow-y-auto scrollbar-hide">
                     <p className="text-base text-white/90 whitespace-pre-wrap mb-4">
                       {feed.content}
@@ -172,17 +185,6 @@ export default function Activity() {
                           : null
                         }
                       </div>
-                    )}
-                    {feed.url && (
-                      <a
-                        href={feed.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-block bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors mt-2"
-                      >
-                        링크 열기
-                      </a>
                     )}
                   </div>
                 </div>
@@ -222,6 +224,19 @@ export default function Activity() {
                       <h3 className="text-2xl font-semibold mb-4">
                         {feed.title}
                       </h3>
+                      
+                      {feed.url && (
+                        <a
+                          href={feed.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center justify-center bg-green-500 text-white px-4 py-1.5 rounded-lg hover:bg-green-600 transition-colors mb-4 text-sm font-medium"
+                        >
+                          링크 열기
+                        </a>
+                      )}
+                      
                       <div className="flex-1 overflow-y-auto scrollbar-hide">
                         <p className="text-base text-white/90 whitespace-pre-wrap mb-4">
                           {feed.content}
@@ -240,17 +255,6 @@ export default function Activity() {
                               : null
                             }
                           </div>
-                        )}
-                        {feed.url && (
-                          <a
-                            href={feed.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-block bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors mt-2"
-                          >
-                            링크 열기
-                          </a>
                         )}
                       </div>
                     </div>
