@@ -31,24 +31,24 @@ const liturgicalSeasons = [
   },
   {
     id: 'advent',
-    name: '대림 시기',
+    name: '대림 시기, 사순시기',
     color: 'purple-500',
     textColor: 'text-purple-600',
     borderColor: 'border-purple-500',
     bgColor: 'bg-purple-50',
     iosColor: '#AF52DE',
-    description: '보라색은 구세주 오심을 기다리며 준비하는 시기에요.',
+    description: '보라색은 구세주 오심을 기다리며 준비하는 시기에요. 예수님 오심 축하해요!',
     image: '/lesson/01/3-purple.png',
   },
   {
     id: 'christmas',
-    name: '성탄 시기',
+    name: '성탄 시기, 부활시기',
     color: 'white',
     textColor: 'text-black',
     borderColor: 'border-gray-300',
     bgColor: 'bg-blue-50',
     iosColor: '#000000',
-    description: '하얀색은 예수 그리스도의 탄생을 축하하는 시기에요. 여러분!',
+    description: '하얀색은 예수 그리스도의 탄생을 축하하는 시기에요. 여러분! 성인들의 축일때도 입어요! ',
     image: '/lesson/01/6-white.png',
   },
   {
@@ -59,19 +59,8 @@ const liturgicalSeasons = [
     borderColor: 'border-red-500',
     bgColor: 'bg-red-50',
     iosColor: '#FF3B30',
-    description: '빨간색은 성령의 강림을 기념하는 대축일에요.',
+    description: '빨간색은 성령의 강림을 기념하는 대축일에요. 순교자 축일에도 빨간색을 사용해요.',
     image: '/lesson/01/4-red.png',
-  },
-  {
-    id: 'easter',
-    name: '부활 시기',
-    color: 'yellow-400',
-    textColor: 'text-yellow-600',
-    borderColor: 'border-yellow-400',
-    bgColor: 'bg-yellow-50',
-    iosColor: '#FFCC00',
-    description: '노란색은 그리스도의 부활을 기념하고 축하하는 시기에요. 이제 잘 알겠죠?',
-    image: '/lesson/01/5-yellow.png',
   }
 ];
 
@@ -81,7 +70,6 @@ const colorButtons = [
   { id: 'green', bgColor: '#34C759', borderColor: '#34C759', season: 'ordinary', iosColor: '#34C759' },
   { id: 'purple', bgColor: '#AF52DE', borderColor: '#AF52DE', season: 'advent', iosColor: '#AF52DE' },
   { id: 'red', bgColor: '#FF3B30', borderColor: '#FF3B30', season: 'pentecost', iosColor: '#FF3B30' },
-  { id: 'yellow', bgColor: '#FFCC00', borderColor: '#FFCC00', season: 'easter', iosColor: '#FFCC00' },
 ];
 
 // 파티클 생성 함수
@@ -89,7 +77,6 @@ const generateParticles = (count: number) => {
   // iOS 컬러 배열
   const iosColors = [
     'rgba(255, 59, 48, 0.8)',    // Red
-    'rgba(255, 204, 0, 0.8)',    // Yellow
     'rgba(52, 199, 89, 0.8)',    // Green
     'rgba(0, 122, 255, 0.8)',    // Blue
     'rgba(175, 82, 222, 0.8)',   // Purple
