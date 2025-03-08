@@ -233,6 +233,7 @@ export default function Signup() {
                     onChange={handleChange}
                     className="w-full p-3 mb-4 rounded-full bg-white/10 text-white text-center appearance-none outline-none focus:ring-0"
                   >
+                    <option value="학년선택">&nbsp;&nbsp;&nbsp;&nbsp;학년선택&nbsp;&nbsp;&nbsp;&nbsp;</option>
                     <option value="중1">&nbsp;&nbsp;&nbsp;&nbsp;중학교 1&nbsp;&nbsp;&nbsp;&nbsp;</option>
                     <option value="중2">&nbsp;&nbsp;&nbsp;&nbsp;중학교 2&nbsp;&nbsp;&nbsp;&nbsp;</option>
                     <option value="중3">&nbsp;&nbsp;&nbsp;&nbsp;중학교 3&nbsp;&nbsp;&nbsp;&nbsp;</option>

@@ -373,29 +373,6 @@ const MonthSelector = styled.div`
     &::-webkit-scrollbar {
       display: none; /* Chrome, Safari, Opera */
     }
-    
-    &::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: 20px;
-      background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
-      pointer-events: none;
-    }
-    
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 20px;
-      background: linear-gradient(to left, transparent, rgba(255, 255, 255, 0.8));
-      pointer-events: none;
-      z-index: 1;
-    }
   }
 `;
 
